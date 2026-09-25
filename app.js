@@ -113,6 +113,30 @@ const campusModalContent =
 const closeCampusModal =
   byId("closeCampusModal");
 
+const reviewModal =
+  byId("reviewModal");
+
+const reviewModalBackdrop =
+  byId("reviewModalBackdrop");
+
+const reviewModalName =
+  byId("reviewModalName");
+
+const reviewModalMeta =
+  byId("reviewModalMeta");
+
+const reviewVideoFrame =
+  byId("reviewVideoFrame");
+
+const reviewCurrentStatus =
+  byId("reviewCurrentStatus");
+
+const reviewOriginalLink =
+  byId("reviewOriginalLink");
+
+const closeReviewModal =
+  byId("closeReviewModal");
+
 
 // ============================================================
 // STATE
