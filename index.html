@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -8,21 +10,29 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>MBU English Contest Dashboard</title>
+  <title>
+    MBU English Contest Dashboard
+  </title>
 
   <link
     rel="stylesheet"
-    href="style.css?v=baseline-03"
+    href="style.css?v=baseline-simple-01"
   >
+
 </head>
+
 
 <body>
 
+
   <!-- ==================================================
-       LOGIN PAGE
+       LOGIN
   =================================================== -->
 
-  <section id="loginPage" class="login-page">
+  <section
+    id="loginPage"
+    class="login-page"
+  >
 
     <div class="login-card">
 
@@ -30,19 +40,24 @@
         MBU
       </div>
 
+
       <div class="login-eyebrow">
         MBU ENGLISH CONTEST
       </div>
+
 
       <h1>
         English Contest Dashboard
       </h1>
 
+
       <p class="login-description">
         ระบบติดตามผลงานโครงการประกวดคลิปภาษาอังกฤษ
       </p>
 
+
       <form id="loginForm">
+
 
         <div class="form-group">
 
@@ -92,6 +107,7 @@
           class="login-error"
         ></div>
 
+
       </form>
 
     </div>
@@ -101,7 +117,7 @@
 
 
   <!-- ==================================================
-       DASHBOARD PAGE
+       DASHBOARD
   =================================================== -->
 
   <section
@@ -109,11 +125,12 @@
     class="dashboard-page hidden"
   >
 
+
     <!-- HEADER -->
 
     <header class="topbar">
 
-      <div class="topbar-brand">
+      <div>
 
         <div class="header-eyebrow">
           MBU ENGLISH CONTEST
@@ -132,8 +149,8 @@
 
         <button
           id="logoutButton"
-          class="outline-button"
           type="button"
+          class="outline-button"
         >
           ออกจากระบบ
         </button>
@@ -143,11 +160,12 @@
     </header>
 
 
+
     <main class="dashboard-container">
 
 
       <!-- ==================================================
-           PROJECT NAVIGATION
+           PROJECT
       =================================================== -->
 
       <section class="project-nav">
@@ -160,32 +178,34 @@
           ทั้งหมด
         </button>
 
+
         <button
           type="button"
           class="project-tab"
           data-project="campus-pride"
         >
+
           <span class="tab-code">
             PROJECT 01
           </span>
 
-          <span>
-            My University, My Campus, My Pride
-          </span>
+          My University, My Campus, My Pride
+
         </button>
+
 
         <button
           type="button"
           class="project-tab"
           data-project="my-life-mbu"
         >
+
           <span class="tab-code">
             PROJECT 02
           </span>
 
-          <span>
-            My Life at MBU
-          </span>
+          My Life at MBU
+
         </button>
 
       </section>
@@ -197,6 +217,7 @@
       =================================================== -->
 
       <section class="kpi-grid">
+
 
         <article class="kpi-card">
 
@@ -216,6 +237,7 @@
           </div>
 
         </article>
+
 
 
         <article class="kpi-card">
@@ -238,6 +260,7 @@
         </article>
 
 
+
         <article class="kpi-card">
 
           <div class="kpi-label">
@@ -256,6 +279,7 @@
           </div>
 
         </article>
+
 
 
         <article class="kpi-card kpi-green">
@@ -278,6 +302,7 @@
         </article>
 
 
+
         <article class="kpi-card kpi-orange">
 
           <div class="kpi-label">
@@ -298,24 +323,26 @@
         </article>
 
 
-        <article class="kpi-card kpi-red">
+
+        <article class="kpi-card kpi-purple">
 
           <div class="kpi-label">
-            มีปัญหา
+            รายการส่งซ้ำ
           </div>
 
           <div
-            id="kpiProblem"
+            id="kpiDuplicate"
             class="kpi-number"
           >
             0
           </div>
 
           <div class="kpi-caption">
-            รายการ
+            submissions เพิ่มเติม
           </div>
 
         </article>
+
 
       </section>
 
@@ -358,9 +385,10 @@
 
 
 
-        <!-- SUBMISSION PANEL -->
+        <!-- SUBMISSIONS -->
 
         <article class="panel submission-panel">
+
 
           <div class="panel-header submission-header">
 
@@ -388,28 +416,35 @@
 
 
 
-          <!-- FILTERS -->
+          <!-- FILTER -->
 
           <div class="filter-area">
 
+
             <select id="filterYear">
+
               <option value="">
                 ทุกชั้นปี
               </option>
+
             </select>
 
 
             <select id="filterCampus">
+
               <option value="">
                 ทุกวิทยาเขต
               </option>
+
             </select>
 
 
             <select id="filterFaculty">
+
               <option value="">
                 ทุกคณะ
               </option>
+
             </select>
 
 
@@ -425,10 +460,6 @@
 
               <option value="watched">
                 ดูแล้ว
-              </option>
-
-              <option value="problem">
-                มีปัญหา
               </option>
 
             </select>
@@ -449,11 +480,60 @@
               ล้างตัวกรอง
             </button>
 
+
           </div>
 
 
 
-          <!-- TABLE DESKTOP -->
+          <!-- SELECT / EXPORT -->
+
+          <div class="selection-toolbar">
+
+
+            <div class="selection-left">
+
+              <label class="select-all-label">
+
+                <input
+                  id="selectAllVisible"
+                  type="checkbox"
+                >
+
+                เลือกทั้งหมดที่แสดง
+
+              </label>
+
+
+              <span class="selection-count">
+
+                เลือกแล้ว
+
+                <strong id="selectedCount">
+                  0
+                </strong>
+
+                คน
+
+              </span>
+
+            </div>
+
+
+            <button
+              id="exportSelectedButton"
+              type="button"
+              class="export-button"
+              disabled
+            >
+              Export รายการที่เลือก
+            </button>
+
+
+          </div>
+
+
+
+          <!-- TABLE -->
 
           <div class="table-container">
 
@@ -462,6 +542,10 @@
               <thead>
 
                 <tr>
+
+                  <th class="checkbox-col">
+                    เลือก
+                  </th>
 
                   <th>
                     ชื่อ
@@ -498,6 +582,7 @@
 
               <tbody id="submissionTableBody"></tbody>
 
+
             </table>
 
           </div>
@@ -511,11 +596,15 @@
             class="submission-cards"
           ></div>
 
+
         </article>
+
 
       </section>
 
+
     </main>
+
 
   </section>
 
@@ -530,6 +619,7 @@
     class="modal hidden"
   >
 
+
     <div
       id="campusModalBackdrop"
       class="modal-backdrop"
@@ -537,6 +627,7 @@
 
 
     <div class="modal-card">
+
 
       <div class="modal-header">
 
@@ -561,6 +652,7 @@
           ×
         </button>
 
+
       </div>
 
 
@@ -569,231 +661,129 @@
         class="modal-content"
       ></div>
 
+
     </div>
+
 
   </div>
 
-  <!-- ==================================================
-     VIDEO REVIEW MODAL
-=================================================== -->
 
-<div
-  id="reviewModal"
-  class="modal hidden"
->
+
+  <!-- ==================================================
+       VIDEO MODAL
+  =================================================== -->
 
   <div
-    id="reviewModalBackdrop"
-    class="modal-backdrop"
-  ></div>
-
-  <div class="review-modal-card">
-
-    <div class="modal-header">
-
-      <div>
-
-        <div class="panel-eyebrow">
-          VIDEO REVIEW
-        </div>
-
-        <h2 id="reviewModalName">
-          ผลงาน
-        </h2>
-
-        <div
-          id="reviewModalMeta"
-          class="review-modal-meta"
-        ></div>
-
-      </div>
-
-      <button
-        id="closeReviewModal"
-        type="button"
-        class="modal-close"
-      >
-        ×
-      </button>
-
-    </div>
+    id="reviewModal"
+    class="modal hidden"
+  >
 
 
-    <div class="review-video-area">
+    <div
+      id="reviewModalBackdrop"
+      class="modal-backdrop"
+    ></div>
 
-      <iframe
-        id="reviewVideoFrame"
-        title="Video submission"
-        allow="autoplay; fullscreen"
-        allowfullscreen
-      ></iframe>
 
-      <div class="review-footer">
+    <div class="review-modal-card">
+
+
+      <div class="modal-header">
 
         <div>
 
-          <div class="review-status-label">
-            สถานะ
-          </div>
-
-          <div id="reviewCurrentStatus"></div>
-
-        </div>
-
-        <a
-          id="reviewOriginalLink"
-          class="outline-button"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          เปิดลิงก์ต้นฉบับ
-        </a>
-
-      </div>
-
-    </div>
-
-    <!-- ==================================================
-         PROBLEM / FOLLOW-UP
-    =================================================== -->
-    
-    <div class="review-problem-panel">
-    
-      <div class="review-problem-header">
-    
-        <div>
-    
           <div class="panel-eyebrow">
-            FOLLOW-UP
+            VIDEO REVIEW
           </div>
-    
-          <h3>
-            การติดตามปัญหา
-          </h3>
-    
+
+
+          <h2 id="reviewModalName">
+            ผลงาน
+          </h2>
+
+
+          <div
+            id="reviewModalMeta"
+            class="review-modal-meta"
+          ></div>
+
+
         </div>
-    
-        <label class="problem-toggle">
-    
-          <input
-            id="reviewHasProblem"
-            type="checkbox"
-          >
-    
-          <span>
-            ผลงานนี้มีปัญหา
-          </span>
-    
-        </label>
-    
-      </div>
-    
-    
-      <div
-        id="problemFields"
-        class="problem-fields disabled"
-      >
-    
-        <div class="problem-field">
-    
-          <label for="reviewProblemType">
-            ประเภทปัญหา
-          </label>
-    
-          <select
-            id="reviewProblemType"
-            disabled
-          >
-    
-            <option value="">
-              เลือกประเภทปัญหา
-            </option>
-    
-            <option value="เปิดลิงก์ไม่ได้">
-              เปิดลิงก์ไม่ได้
-            </option>
-    
-            <option value="ไม่มีสิทธิ์เข้าถึง">
-              ไม่มีสิทธิ์เข้าถึง
-            </option>
-    
-            <option value="ส่งไฟล์ผิด">
-              ส่งไฟล์ผิด
-            </option>
-    
-            <option value="ไฟล์เปิดไม่ได้">
-              ไฟล์เปิดไม่ได้
-            </option>
-    
-            <option value="ไม่มีเสียง">
-              ไม่มีเสียง
-            </option>
-    
-            <option value="ข้อมูลไม่ครบ">
-              ข้อมูลไม่ครบ
-            </option>
-    
-            <option value="อื่นๆ">
-              อื่นๆ
-            </option>
-    
-          </select>
-    
-        </div>
-    
-    
-        <div class="problem-field">
-    
-          <label for="reviewProblemNote">
-            หมายเหตุสำหรับการประสานงาน
-          </label>
-    
-          <textarea
-            id="reviewProblemNote"
-            rows="3"
-            disabled
-            placeholder="เช่น นักศึกษาตั้งค่า Google Drive เป็น Restricted..."
-          ></textarea>
-    
-        </div>
-    
-      </div>
-    
-    
-      <div class="review-problem-footer">
-    
-        <div
-          id="reviewProblemMessage"
-          class="problem-save-message"
-        ></div>
-    
+
+
         <button
-          id="saveProblemButton"
+          id="closeReviewModal"
           type="button"
-          class="primary-button"
+          class="modal-close"
         >
-          บันทึกสถานะ
+          ×
         </button>
-    
+
+
       </div>
-    
+
+
+
+      <div class="review-video-area">
+
+
+        <iframe
+          id="reviewVideoFrame"
+          title="Video submission"
+          allow="autoplay; fullscreen"
+          allowfullscreen
+        ></iframe>
+
+
+
+        <div class="review-footer">
+
+
+          <div>
+
+            <div class="review-status-label">
+              สถานะ
+            </div>
+
+            <div id="reviewCurrentStatus"></div>
+
+          </div>
+
+
+          <a
+            id="reviewOriginalLink"
+            class="outline-button original-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            เปิดลิงก์ต้นฉบับ
+          </a>
+
+
+        </div>
+
+
+      </div>
+
+
     </div>
+
 
   </div>
-
-</div>
 
 
 
   <!-- ==================================================
-       JAVASCRIPT
+       JS
   =================================================== -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="config.js?v=baseline-03"></script>
+  <script src="config.js?v=baseline-simple-01"></script>
 
-  <script src="app.js?v=baseline-03"></script>
+  <script src="app.js?v=baseline-simple-01"></script>
+
 
 </body>
+
 </html>
