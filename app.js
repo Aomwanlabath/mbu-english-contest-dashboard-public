@@ -18,9 +18,7 @@
 
 <body>
 
-  <!-- =========================
-       LOGIN
-  ========================== -->
+  <!--  LOGIN  -->
 
   <section id="loginPage" class="login-page">
 
