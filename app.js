@@ -1,5 +1,5 @@
 // ============================================================
-// SUPABASE CLIENT
+// SUPABASE
 // ============================================================
 
 const client = supabase.createClient(
@@ -9,7 +9,7 @@ const client = supabase.createClient(
 
 
 // ============================================================
-// DOM HELPER
+// HELPER
 // ============================================================
 
 function byId(id) {
@@ -18,7 +18,7 @@ function byId(id) {
 
 
 // ============================================================
-// DOM ELEMENTS
+// DOM
 // ============================================================
 
 const loginPage =
@@ -58,8 +58,8 @@ const kpiWatched =
 const kpiUnwatched =
   byId("kpiUnwatched");
 
-const kpiProblem =
-  byId("kpiProblem");
+const kpiDuplicate =
+  byId("kpiDuplicate");
 
 
 const campusList =
@@ -98,6 +98,18 @@ const clearFilters =
   byId("clearFilters");
 
 
+const selectAllVisible =
+  byId("selectAllVisible");
+
+const selectedCount =
+  byId("selectedCount");
+
+const exportSelectedButton =
+  byId("exportSelectedButton");
+
+
+// CAMPUS MODAL
+
 const campusModal =
   byId("campusModal");
 
@@ -112,6 +124,9 @@ const campusModalContent =
 
 const closeCampusModal =
   byId("closeCampusModal");
+
+
+// VIDEO MODAL
 
 const reviewModal =
   byId("reviewModal");
@@ -137,24 +152,6 @@ const reviewOriginalLink =
 const closeReviewModal =
   byId("closeReviewModal");
 
-const reviewHasProblem =
-  byId("reviewHasProblem");
-
-const problemFields =
-  byId("problemFields");
-
-const reviewProblemType =
-  byId("reviewProblemType");
-
-const reviewProblemNote =
-  byId("reviewProblemNote");
-
-const reviewProblemMessage =
-  byId("reviewProblemMessage");
-
-const saveProblemButton =
-  byId("saveProblemButton");
-
 
 // ============================================================
 // STATE
@@ -162,9 +159,11 @@ const saveProblemButton =
 
 let allSubmissions = [];
 
-let currentProject = "all";
+let currentProject =
+  "all";
 
-let currentReviewRow = null;
+let selectedIds =
+  new Set();
 
 
 // ============================================================
@@ -177,9 +176,14 @@ loginForm.addEventListener(
 
     event.preventDefault();
 
-    loginError.textContent = "";
 
-    loginButton.disabled = true;
+    loginError.textContent =
+      "";
+
+
+    loginButton.disabled =
+      true;
+
 
     loginButton.textContent =
       "กำลังเข้าสู่ระบบ...";
@@ -216,10 +220,13 @@ loginForm.addEventListener(
         "Email หรือ Password ไม่ถูกต้อง";
 
 
-      loginButton.disabled = false;
+      loginButton.disabled =
+        false;
+
 
       loginButton.textContent =
         "เข้าสู่ระบบ";
+
 
       return;
     }
@@ -230,7 +237,9 @@ loginForm.addEventListener(
     );
 
 
-    loginButton.disabled = false;
+    loginButton.disabled =
+      false;
+
 
     loginButton.textContent =
       "เข้าสู่ระบบ";
@@ -251,6 +260,9 @@ logoutButton.addEventListener(
 
 
     allSubmissions = [];
+
+
+    selectedIds.clear();
 
 
     dashboardPage.classList.add(
@@ -280,52 +292,43 @@ async function loadDashboardData() {
   );
 
 
-  const submissionsRequest =
-    client
-      .from("submissions")
-      .select(
-        `
-        id,
-        project_id,
-        project_name,
-        student_id,
-        name,
-        campus,
-        faculty,
-        program,
-        year_level,
-        video_url,
-        duplicate_count,
-        submitted_at
-        `
-      )
-      .order(
-        "name",
-        {
-          ascending: true
-        }
-      );
-
-
-  const reviewsRequest =
-    client
-      .from("review_status")
-      .select(
-        `
-        submission_id,
-        watched,
-        watched_at,
-        has_problem,
-        problem_type,
-        note
-        `
-      );
-
-
   const results =
     await Promise.all([
-      submissionsRequest,
-      reviewsRequest
+
+      client
+        .from("submissions")
+        .select(`
+          id,
+          project_id,
+          project_name,
+          student_id,
+          name,
+          campus,
+          faculty,
+          program,
+          year_level,
+          phone,
+          email,
+          video_url,
+          duplicate_count,
+          submitted_at
+        `)
+        .order(
+          "name",
+          {
+            ascending: true
+          }
+        ),
+
+
+      client
+        .from("review_status")
+        .select(`
+          submission_id,
+          watched,
+          watched_at
+        `)
+
     ]);
 
 
@@ -342,7 +345,6 @@ async function loadDashboardData() {
   ) {
 
     console.error(
-      "Submission load error:",
       submissionsResult.error
     );
 
@@ -350,6 +352,7 @@ async function loadDashboardData() {
     alert(
       "ไม่สามารถโหลดข้อมูลผู้ส่งผลงานได้"
     );
+
 
     return;
   }
@@ -360,7 +363,6 @@ async function loadDashboardData() {
   ) {
 
     console.error(
-      "Review load error:",
       reviewsResult.error
     );
 
@@ -368,6 +370,7 @@ async function loadDashboardData() {
     alert(
       "ไม่สามารถโหลดสถานะการตรวจได้"
     );
+
 
     return;
   }
@@ -377,11 +380,9 @@ async function loadDashboardData() {
     new Map();
 
 
-  const reviews =
-    reviewsResult.data || [];
-
-
-  reviews.forEach(
+  (
+    reviewsResult.data || []
+  ).forEach(
     function (review) {
 
       reviewMap.set(
@@ -393,31 +394,26 @@ async function loadDashboardData() {
   );
 
 
-  const submissions =
-    submissionsResult.data || [];
-
-
   allSubmissions =
-    submissions.map(
-      function (submission) {
+    (
+      submissionsResult.data || []
+    ).map(
+      function (row) {
 
         const review =
           reviewMap.get(
-            submission.id
+            row.id
           );
 
 
         return {
 
-          ...submission,
+          ...row,
 
           review:
             review || {
               watched: false,
-              watched_at: null,
-              has_problem: false,
-              problem_type: "",
-              note: ""
+              watched_at: null
             }
 
         };
@@ -434,13 +430,14 @@ async function loadDashboardData() {
 
   populateFilters();
 
+
   renderDashboard();
 
 }
 
 
 // ============================================================
-// PROJECT SWITCH
+// PROJECT
 // ============================================================
 
 const projectTabs =
@@ -476,9 +473,14 @@ projectTabs.forEach(
           button.dataset.project;
 
 
+        selectedIds.clear();
+
+
         resetFilters();
 
+
         populateFilters();
+
 
         renderDashboard();
 
@@ -490,13 +492,14 @@ projectTabs.forEach(
 
 
 // ============================================================
-// PROJECT DATA
+// PROJECT ROWS
 // ============================================================
 
 function getProjectRows() {
 
   if (
-    currentProject === "all"
+    currentProject ===
+    "all"
   ) {
 
     return allSubmissions;
@@ -519,7 +522,7 @@ function getProjectRows() {
 
 
 // ============================================================
-// UNIQUE VALUES
+// UNIQUE
 // ============================================================
 
 function getUniqueValues(
@@ -527,47 +530,47 @@ function getUniqueValues(
   field
 ) {
 
-  const values =
-    rows
-      .map(
-        function (row) {
+  return [
+    ...new Set(
+      rows
+        .map(
+          function (row) {
 
-          return row[field];
+            return row[field];
 
-        }
-      )
-      .filter(
-        function (value) {
+          }
+        )
+        .filter(
+          function (value) {
 
-          return (
-            value !== null &&
-            value !== undefined &&
-            String(value).trim() !== ""
+            return (
+              value !== null &&
+              value !== undefined &&
+              String(value)
+                .trim() !== ""
+            );
+
+          }
+        )
+    )
+  ]
+    .sort(
+      function (a, b) {
+
+        return String(a)
+          .localeCompare(
+            String(b),
+            "th"
           );
 
-        }
-      );
-
-
-  return [
-    ...new Set(values)
-  ].sort(
-    function (a, b) {
-
-      return String(a)
-        .localeCompare(
-          String(b),
-          "th"
-        );
-
-    }
-  );
+      }
+    );
 
 }
 
 
 // ============================================================
-// POPULATE SELECT
+// SELECT OPTIONS
 // ============================================================
 
 function populateSelect(
@@ -576,7 +579,7 @@ function populateSelect(
   firstLabel
 ) {
 
-  const previousValue =
+  const oldValue =
     element.value;
 
 
@@ -584,22 +587,22 @@ function populateSelect(
     "";
 
 
-  const firstOption =
+  const first =
     document.createElement(
       "option"
     );
 
 
-  firstOption.value =
+  first.value =
     "";
 
 
-  firstOption.textContent =
+  first.textContent =
     firstLabel;
 
 
   element.appendChild(
-    firstOption
+    first
   );
 
 
@@ -630,12 +633,12 @@ function populateSelect(
 
   if (
     values.includes(
-      previousValue
+      oldValue
     )
   ) {
 
     element.value =
-      previousValue;
+      oldValue;
 
   }
 
@@ -672,7 +675,7 @@ function populateFilters() {
   );
 
 
-  let facultySource =
+  let facultyRows =
     rows;
 
 
@@ -680,7 +683,7 @@ function populateFilters() {
     filterCampus.value
   ) {
 
-    facultySource =
+    facultyRows =
       rows.filter(
         function (row) {
 
@@ -698,7 +701,7 @@ function populateFilters() {
   populateSelect(
     filterFaculty,
     getUniqueValues(
-      facultySource,
+      facultyRows,
       "faculty"
     ),
     "ทุกคณะ"
@@ -712,16 +715,6 @@ function populateFilters() {
 // ============================================================
 
 function getStatus(row) {
-
-  if (
-    row.review &&
-    row.review.has_problem
-  ) {
-
-    return "problem";
-
-  }
-
 
   if (
     row.review &&
@@ -740,66 +733,53 @@ function getStatus(row) {
 
 function getStatusBadge(row) {
 
-  const status =
-    getStatus(row);
-
-
   if (
-    status === "problem"
+    getStatus(row) ===
+    "watched"
   ) {
 
-    return (
-      '<span class="status-badge problem">' +
-      "⚠ มีปัญหา" +
-      "</span>"
-    );
+    return `
+      <span class="status-badge watched">
+        ✓ ดูแล้ว
+      </span>
+    `;
 
   }
 
 
-  if (
-    status === "watched"
-  ) {
-
-    return (
-      '<span class="status-badge watched">' +
-      "✓ ดูแล้ว" +
-      "</span>"
-    );
-
-  }
-
-
-  return (
-    '<span class="status-badge unwatched">' +
-    "● ยังไม่ดู" +
-    "</span>"
-  );
+  return `
+    <span class="status-badge unwatched">
+      ● ยังไม่ดู
+    </span>
+  `;
 
 }
 
 
 // ============================================================
-// RENDER DASHBOARD
+// DASHBOARD
 // ============================================================
 
 function renderDashboard() {
 
-  const projectRows =
+  const rows =
     getProjectRows();
 
 
   renderKPIs(
-    projectRows
+    rows
   );
 
 
   renderCampusOverview(
-    projectRows
+    rows
   );
 
 
   renderSubmissions();
+
+
+  updateSelectionUI();
 
 }
 
@@ -841,53 +821,58 @@ function renderKPIs(rows) {
     ).length;
 
 
-  const problem =
-    rows.filter(
-      function (row) {
-
-        return (
-          row.review &&
-          row.review.has_problem
-        );
-
-      }
-    ).length;
-
-
-  const unwatched =
-    rows.filter(
-      function (row) {
-
-        return !(
-          row.review &&
-          row.review.watched
-        );
-
-      }
-    ).length;
-
-
   kpiWatched.textContent =
     watched;
 
 
   kpiUnwatched.textContent =
-    unwatched;
+    rows.length -
+    watched;
 
 
-  kpiProblem.textContent =
-    problem;
+  const duplicates =
+    rows.reduce(
+      function (
+        total,
+        row
+      ) {
+
+        const count =
+          Number(
+            row.duplicate_count ||
+            1
+          );
+
+
+        return (
+          total +
+          Math.max(
+            count - 1,
+            0
+          )
+        );
+
+      },
+      0
+    );
+
+
+  kpiDuplicate.textContent =
+    duplicates;
 
 }
 
 
 // ============================================================
-// CAMPUS OVERVIEW
+// CAMPUS
 // ============================================================
 
-function renderCampusOverview(rows) {
+function renderCampusOverview(
+  rows
+) {
 
-  const groups = {};
+  const groups =
+    {};
 
 
   rows.forEach(
@@ -902,14 +887,14 @@ function renderCampusOverview(rows) {
         !groups[campus]
       ) {
 
-        groups[campus] = [];
+        groups[campus] =
+          [];
 
       }
 
 
-      groups[campus].push(
-        row
-      );
+      groups[campus]
+        .push(row);
 
     }
   );
@@ -918,31 +903,21 @@ function renderCampusOverview(rows) {
   const campuses =
     Object.entries(
       groups
-    ).sort(
-      function (a, b) {
+    )
+      .sort(
+        function (a, b) {
 
-        return (
-          b[1].length -
-          a[1].length
-        );
+          return (
+            b[1].length -
+            a[1].length
+          );
 
-      }
-    );
+        }
+      );
 
 
   campusList.innerHTML =
     "";
-
-
-  if (
-    campuses.length === 0
-  ) {
-
-    campusList.innerHTML =
-      '<div class="empty-table">ไม่มีข้อมูล</div>';
-
-    return;
-  }
 
 
   campuses.forEach(
@@ -952,19 +927,12 @@ function renderCampusOverview(rows) {
         entry[0];
 
 
-      const campusRows =
+      const rows =
         entry[1];
 
 
-      const facultyCount =
-        getUniqueValues(
-          campusRows,
-          "faculty"
-        ).length;
-
-
       const watched =
-        campusRows.filter(
+        rows.filter(
           function (row) {
 
             return (
@@ -976,16 +944,10 @@ function renderCampusOverview(rows) {
         ).length;
 
 
-      const problem =
-        campusRows.filter(
-          function (row) {
-
-            return (
-              row.review &&
-              row.review.has_problem
-            );
-
-          }
+      const facultyCount =
+        getUniqueValues(
+          rows,
+          "faculty"
         ).length;
 
 
@@ -1007,10 +969,11 @@ function renderCampusOverview(rows) {
             ${escapeHtml(campus)}
           </div>
 
+
           <div class="campus-stats">
 
             <span>
-              ${campusRows.length} คน
+              ${rows.length} คน
             </span>
 
             <span>
@@ -1019,22 +982,9 @@ function renderCampusOverview(rows) {
 
           </div>
 
+
           <div class="campus-status">
-
-            <span>
-              ดูแล้ว ${watched}/${campusRows.length}
-            </span>
-
-            ${
-              problem > 0
-                ? `
-                <span class="problem">
-                  ⚠ ${problem} มีปัญหา
-                </span>
-                `
-                : ""
-            }
-
+            ดูแล้ว ${watched}/${rows.length}
           </div>
 
         </div>
@@ -1044,15 +994,16 @@ function renderCampusOverview(rows) {
 
           <button
             type="button"
-            class="mini-button view-campus-list"
+            class="mini-button campus-list-button"
             data-campus="${escapeAttribute(campus)}"
           >
             ดูรายชื่อ
           </button>
 
+
           <button
             type="button"
-            class="mini-button secondary view-campus-detail"
+            class="mini-button secondary campus-detail-button"
             data-campus="${escapeAttribute(campus)}"
           >
             รายละเอียด
@@ -1081,71 +1032,67 @@ function renderCampusOverview(rows) {
 
 function attachCampusEvents() {
 
-  const listButtons =
-    document.querySelectorAll(
-      ".view-campus-list"
+  document
+    .querySelectorAll(
+      ".campus-list-button"
+    )
+    .forEach(
+      function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            const campus =
+              button.dataset.campus;
+
+
+            filterCampus.value =
+              campus;
+
+
+            populateFilters();
+
+
+            filterCampus.value =
+              campus;
+
+
+            renderSubmissions();
+
+          }
+        );
+
+      }
     );
 
 
-  listButtons.forEach(
-    function (button) {
+  document
+    .querySelectorAll(
+      ".campus-detail-button"
+    )
+    .forEach(
+      function (button) {
 
-      button.addEventListener(
-        "click",
-        function () {
+        button.addEventListener(
+          "click",
+          function () {
 
-          const campus =
-            button.dataset.campus;
+            showCampusDetail(
+              button.dataset.campus
+            );
 
+          }
+        );
 
-          filterCampus.value =
-            campus;
-
-
-          populateFilters();
-
-
-          filterCampus.value =
-            campus;
-
-
-          renderSubmissions();
-
-        }
-      );
-
-    }
-  );
-
-
-  const detailButtons =
-    document.querySelectorAll(
-      ".view-campus-detail"
+      }
     );
-
-
-  detailButtons.forEach(
-    function (button) {
-
-      button.addEventListener(
-        "click",
-        function () {
-
-          showCampusDetail(
-            button.dataset.campus
-          );
-
-        }
-      );
-
-    }
-  );
 
 }
 
 
 // ============================================================
-// FILTERED ROWS
+// FILTERED
 // ============================================================
 
 function getFilteredRows() {
@@ -1154,19 +1101,19 @@ function getFilteredRows() {
     getProjectRows();
 
 
-  const selectedYear =
+  const year =
     filterYear.value;
 
 
-  const selectedCampus =
+  const campus =
     filterCampus.value;
 
 
-  const selectedFaculty =
+  const faculty =
     filterFaculty.value;
 
 
-  const selectedStatus =
+  const status =
     filterStatus.value;
 
 
@@ -1178,7 +1125,7 @@ function getFilteredRows() {
 
 
   if (
-    selectedYear
+    year
   ) {
 
     rows =
@@ -1187,7 +1134,7 @@ function getFilteredRows() {
 
           return (
             row.year_level ===
-            selectedYear
+            year
           );
 
         }
@@ -1197,7 +1144,7 @@ function getFilteredRows() {
 
 
   if (
-    selectedCampus
+    campus
   ) {
 
     rows =
@@ -1206,7 +1153,7 @@ function getFilteredRows() {
 
           return (
             row.campus ===
-            selectedCampus
+            campus
           );
 
         }
@@ -1216,7 +1163,7 @@ function getFilteredRows() {
 
 
   if (
-    selectedFaculty
+    faculty
   ) {
 
     rows =
@@ -1225,7 +1172,7 @@ function getFilteredRows() {
 
           return (
             row.faculty ===
-            selectedFaculty
+            faculty
           );
 
         }
@@ -1235,7 +1182,7 @@ function getFilteredRows() {
 
 
   if (
-    selectedStatus
+    status
   ) {
 
     rows =
@@ -1244,7 +1191,7 @@ function getFilteredRows() {
 
           return (
             getStatus(row) ===
-            selectedStatus
+            status
           );
 
         }
@@ -1261,7 +1208,7 @@ function getFilteredRows() {
       rows.filter(
         function (row) {
 
-          const combinedText =
+          const text =
             [
               row.name,
               row.student_id,
@@ -1274,7 +1221,7 @@ function getFilteredRows() {
               .toLowerCase();
 
 
-          return combinedText.includes(
+          return text.includes(
             search
           );
 
@@ -1323,21 +1270,16 @@ function renderSubmissions() {
       `
       <tr>
         <td
-          colspan="7"
+          colspan="8"
           class="empty-table"
         >
-          ไม่พบข้อมูลตามตัวกรอง
+          ไม่พบข้อมูล
         </td>
       </tr>
       `;
 
 
-    submissionCards.innerHTML =
-      `
-      <div class="empty-table">
-        ไม่พบข้อมูลตามตัวกรอง
-      </div>
-      `;
+    updateSelectionUI();
 
 
     return;
@@ -1359,8 +1301,15 @@ function renderSubmissions() {
     }
   );
 
-attachReviewButtons();
-  
+
+  attachRowEvents();
+
+
+  updateSelectAllState();
+
+
+  updateSelectionUI();
+
 }
 
 
@@ -1378,6 +1327,7 @@ function updateSubmissionTitle() {
     submissionTitle.textContent =
       "My University, My Campus, My Pride";
 
+
     return;
   }
 
@@ -1389,6 +1339,7 @@ function updateSubmissionTitle() {
 
     submissionTitle.textContent =
       "My Life at MBU";
+
 
     return;
   }
@@ -1412,36 +1363,38 @@ function renderDesktopRow(row) {
     );
 
 
-  const duplicateHtml =
-    row.duplicate_count > 1
-      ? `
-        <div class="duplicate-note">
-          ส่ง ${row.duplicate_count} ครั้ง
-        </div>
-        `
-      : "";
+  if (
+    row.review &&
+    row.review.watched
+  ) {
+
+    tr.classList.add(
+      "watched-row"
+    );
+
+  }
 
 
-  const videoHtml =
-  row.video_url
-    ? `
-      <button
-        type="button"
-        class="video-button open-review-button"
-        data-id="${row.id}"
-      >
-        ▶ ดูผลงาน
-      </button>
-      `
-    : `
-      <span class="no-video">
-        ไม่มีลิงก์
-      </span>
-      `;
+  const checked =
+    selectedIds.has(
+      row.id
+    );
 
 
   tr.innerHTML =
     `
+    <td>
+
+      <input
+        type="checkbox"
+        class="row-checkbox"
+        data-id="${row.id}"
+        ${checked ? "checked" : ""}
+      >
+
+    </td>
+
+
     <td>
 
       <div class="submission-name">
@@ -1450,7 +1403,15 @@ function renderDesktopRow(row) {
         )}
       </div>
 
-      ${duplicateHtml}
+      ${
+        row.duplicate_count > 1
+          ? `
+          <div class="duplicate-note">
+            ส่ง ${row.duplicate_count} ครั้ง
+          </div>
+          `
+          : ""
+      }
 
     </td>
 
@@ -1489,43 +1450,39 @@ function renderDesktopRow(row) {
 
 
     <td>
-      ${videoHtml}
+
+      ${
+        row.video_url
+          ? `
+          <button
+            type="button"
+            class="video-button open-video-button"
+            data-id="${row.id}"
+          >
+            ▶ ดูผลงาน
+          </button>
+          `
+          : `
+          <span class="no-video">
+            ไม่มีลิงก์
+          </span>
+          `
+      }
+
     </td>
     `;
 
-  if (
-    row.review &&
-    row.review.watched
-  ) {
-    tr.classList.add(
-      "watched-row"
+
+  submissionTableBody
+    .appendChild(
+      tr
     );
-  }
-
-  if (
-  row.review &&
-  row.review.has_problem
-) {
-
-  tr.classList.remove(
-    "watched-row"
-  );
-
-
-  tr.classList.add(
-    "problem-row"
-  );
 
 }
 
-  submissionTableBody.appendChild(
-    tr
-  );
-
-}
 
 // ============================================================
-// MOBILE CARD
+// MOBILE
 // ============================================================
 
 function renderMobileCard(row) {
@@ -1540,26 +1497,40 @@ function renderMobileCard(row) {
     "submission-card";
 
 
-  const videoHtml =
-    row.video_url
-      ? `
-        <button
-          type="button"
-          class="video-button open-review-button"
-          data-id="${row.id}"
-        >
-          ▶ ดูผลงาน
-        </button>
-        `
-      : `
-        <span class="no-video">
-          ไม่มีลิงก์
-        </span>
-        `;
+  if (
+    row.review &&
+    row.review.watched
+  ) {
+
+    card.classList.add(
+      "watched-card"
+    );
+
+  }
+
+
+  const checked =
+    selectedIds.has(
+      row.id
+    );
 
 
   card.innerHTML =
     `
+    <div class="mobile-top">
+
+      <input
+        type="checkbox"
+        class="row-checkbox"
+        data-id="${row.id}"
+        ${checked ? "checked" : ""}
+      >
+
+      ${getStatusBadge(row)}
+
+    </div>
+
+
     <div class="mobile-name">
       ${escapeHtml(
         row.name || "-"
@@ -1597,82 +1568,491 @@ function renderMobileCard(row) {
 
     <div class="mobile-footer">
 
-      ${getStatusBadge(row)}
+      <span>
+        ${
+          row.duplicate_count > 1
+            ? `ส่ง ${row.duplicate_count} ครั้ง`
+            : ""
+        }
+      </span>
 
-      ${videoHtml}
+
+      ${
+        row.video_url
+          ? `
+          <button
+            type="button"
+            class="video-button open-video-button"
+            data-id="${row.id}"
+          >
+            ▶ ดูผลงาน
+          </button>
+          `
+          : ""
+      }
 
     </div>
     `;
 
 
-  submissionCards.appendChild(
-    card
-  );
+  submissionCards
+    .appendChild(
+      card
+    );
 
 }
 
+
 // ============================================================
-// REVIEW VIDEO
+// ROW EVENTS
 // ============================================================
 
-function attachReviewButtons() {
+function attachRowEvents() {
 
-  const buttons =
-    document.querySelectorAll(
-      ".open-review-button"
+  document
+    .querySelectorAll(
+      ".row-checkbox"
+    )
+    .forEach(
+      function (checkbox) {
+
+        checkbox.addEventListener(
+          "change",
+          function () {
+
+            const id =
+              checkbox.dataset.id;
+
+
+            if (
+              checkbox.checked
+            ) {
+
+              selectedIds.add(
+                id
+              );
+
+            } else {
+
+              selectedIds.delete(
+                id
+              );
+
+            }
+
+
+            syncSameCheckboxes(
+              id,
+              checkbox.checked
+            );
+
+
+            updateSelectAllState();
+
+
+            updateSelectionUI();
+
+          }
+        );
+
+      }
     );
 
 
-  buttons.forEach(
-    function (button) {
+  document
+    .querySelectorAll(
+      ".open-video-button"
+    )
+    .forEach(
+      function (button) {
 
-      button.addEventListener(
-        "click",
-        function () {
+        button.addEventListener(
+          "click",
+          function () {
 
-          const submissionId =
-            button.dataset.id;
+            const row =
+              allSubmissions.find(
+                function (item) {
 
+                  return (
+                    item.id ===
+                    button.dataset.id
+                  );
 
-          const row =
-            allSubmissions.find(
-              function (item) {
-
-                return (
-                  item.id ===
-                  submissionId
-                );
-
-              }
-            );
+                }
+              );
 
 
-          if (row) {
+            if (row) {
 
-            openReviewModal(
-              row
-            );
+              openVideoModal(
+                row
+              );
+
+            }
 
           }
+        );
+
+      }
+    );
+
+}
+
+
+// ============================================================
+// CHECKBOX
+// ============================================================
+
+function syncSameCheckboxes(
+  id,
+  checked
+) {
+
+  document
+    .querySelectorAll(
+      '.row-checkbox[data-id="' +
+      id +
+      '"]'
+    )
+    .forEach(
+      function (box) {
+
+        box.checked =
+          checked;
+
+      }
+    );
+
+}
+
+
+selectAllVisible.addEventListener(
+  "change",
+  function () {
+
+    const rows =
+      getFilteredRows();
+
+
+    rows.forEach(
+      function (row) {
+
+        if (
+          selectAllVisible.checked
+        ) {
+
+          selectedIds.add(
+            row.id
+          );
+
+        } else {
+
+          selectedIds.delete(
+            row.id
+          );
+
+        }
+
+      }
+    );
+
+
+    renderSubmissions();
+
+  }
+);
+
+
+function updateSelectAllState() {
+
+  const rows =
+    getFilteredRows();
+
+
+  if (
+    rows.length === 0
+  ) {
+
+    selectAllVisible.checked =
+      false;
+
+
+    selectAllVisible.indeterminate =
+      false;
+
+
+    return;
+  }
+
+
+  const selectedVisible =
+    rows.filter(
+      function (row) {
+
+        return selectedIds.has(
+          row.id
+        );
+
+      }
+    ).length;
+
+
+  selectAllVisible.checked =
+    (
+      selectedVisible ===
+      rows.length
+    );
+
+
+  selectAllVisible.indeterminate =
+    (
+      selectedVisible > 0 &&
+      selectedVisible <
+      rows.length
+    );
+
+}
+
+
+function updateSelectionUI() {
+
+  selectedCount.textContent =
+    selectedIds.size;
+
+
+  exportSelectedButton.disabled =
+    (
+      selectedIds.size ===
+      0
+    );
+
+}
+
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+exportSelectedButton.addEventListener(
+  "click",
+  function () {
+
+    const rows =
+      allSubmissions.filter(
+        function (row) {
+
+          return selectedIds.has(
+            row.id
+          );
 
         }
       );
 
+
+    if (
+      rows.length === 0
+    ) {
+
+      return;
     }
+
+
+    const csvRows =
+      [
+
+        [
+          "โครงการ",
+          "รหัสนักศึกษา",
+          "ชื่อ-สกุล",
+          "วิทยาเขต/วิทยาลัย",
+          "คณะ",
+          "หลักสูตร",
+          "ชั้นปี",
+          "เบอร์ติดต่อ",
+          "Email",
+          "สถานะการดู",
+          "ลิงก์ผลงาน"
+        ],
+
+
+        ...rows.map(
+          function (row) {
+
+            return [
+
+              row.project_name ||
+              "",
+
+              row.student_id ||
+              "",
+
+              row.name ||
+              "",
+
+              row.campus ||
+              "",
+
+              row.faculty ||
+              "",
+
+              row.program ||
+              "",
+
+              row.year_level ||
+              "",
+
+              row.phone ||
+              "",
+
+              row.email ||
+              "",
+
+              getStatus(row) ===
+              "watched"
+                ? "ดูแล้ว"
+                : "ยังไม่ดู",
+
+              row.video_url ||
+              ""
+
+            ];
+
+          }
+        )
+
+      ];
+
+
+    const csv =
+      csvRows
+        .map(
+          function (row) {
+
+            return row
+              .map(
+                csvEscape
+              )
+              .join(",");
+
+          }
+        )
+        .join(
+          "\r\n"
+        );
+
+
+    const blob =
+      new Blob(
+        [
+          "\uFEFF",
+          csv
+        ],
+        {
+          type:
+            "text/csv;charset=utf-8;"
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      "MBU_Problem_Followup_" +
+      getDateString() +
+      ".csv";
+
+
+    document.body
+      .appendChild(
+        link
+      );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  }
+);
+
+
+function csvEscape(value) {
+
+  const text =
+    String(
+      value ?? ""
+    );
+
+
+  return (
+    '"' +
+    text.replaceAll(
+      '"',
+      '""'
+    ) +
+    '"'
   );
 
 }
 
 
-async function openReviewModal(
+function getDateString() {
+
+  const now =
+    new Date();
+
+
+  return (
+    now.getFullYear() +
+    String(
+      now.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    ) +
+    String(
+      now.getDate()
+    ).padStart(
+      2,
+      "0"
+    )
+  );
+
+}
+
+
+// ============================================================
+// VIDEO MODAL
+// ============================================================
+
+async function openVideoModal(
   row
 ) {
 
-  currentReviewRow =
-  row;
-
   reviewModalName.textContent =
-    row.name || "ผลงาน";
+    row.name ||
+    "ผลงาน";
 
 
   reviewModalMeta.textContent =
@@ -1683,7 +2063,9 @@ async function openReviewModal(
       row.year_level
     ]
       .filter(Boolean)
-      .join(" · ");
+      .join(
+        " · "
+      );
 
 
   reviewVideoFrame.src =
@@ -1693,7 +2075,8 @@ async function openReviewModal(
 
 
   reviewOriginalLink.href =
-    row.video_url || "#";
+    row.video_url ||
+    "#";
 
 
   reviewCurrentStatus.innerHTML =
@@ -1701,37 +2084,7 @@ async function openReviewModal(
       row
     );
 
-  reviewHasProblem.checked =
-    Boolean(
-      row.review &&
-      row.review.has_problem
-    );
-  
-  
-  reviewProblemType.value =
-    (
-      row.review &&
-      row.review.problem_type
-    ) || "";
-  
-  
-  reviewProblemNote.value =
-    (
-      row.review &&
-      row.review.note
-    ) || "";
-  
-  
-  reviewProblemMessage.textContent =
-    "";
-  
-  
-  reviewProblemMessage.className =
-    "problem-save-message";
-  
-  
-  updateProblemFieldsState();
-  
+
   reviewModal.classList.remove(
     "hidden"
   );
@@ -1742,7 +2095,7 @@ async function openReviewModal(
     !row.review.watched
   ) {
 
-    await markSubmissionAsWatched(
+    await markAsWatched(
       row
     );
 
@@ -1751,7 +2104,11 @@ async function openReviewModal(
 }
 
 
-async function markSubmissionAsWatched(
+// ============================================================
+// MARK WATCHED
+// ============================================================
+
+async function markAsWatched(
   row
 ) {
 
@@ -1760,47 +2117,27 @@ async function markSubmissionAsWatched(
       .toISOString();
 
 
-  const currentReview =
-    row.review || {};
-
-
-  const payload = {
-
-    submission_id:
-      row.id,
-
-    watched:
-      true,
-
-    watched_at:
-      now,
-
-    has_problem:
-      Boolean(
-        currentReview.has_problem
-      ),
-
-    problem_type:
-      currentReview.problem_type ||
-      null,
-
-    note:
-      currentReview.note ||
-      null,
-
-    updated_at:
-      now
-
-  };
-
-
   const result =
     await client
       .from(
         "review_status"
       )
       .upsert(
-        payload,
+        {
+
+          submission_id:
+            row.id,
+
+          watched:
+            true,
+
+          watched_at:
+            now,
+
+          updated_at:
+            now
+
+        },
         {
           onConflict:
             "submission_id"
@@ -1817,13 +2154,14 @@ async function markSubmissionAsWatched(
       result.error
     );
 
+
     return;
   }
 
 
   row.review = {
 
-    ...currentReview,
+    ...row.review,
 
     watched:
       true,
@@ -1844,6 +2182,10 @@ async function markSubmissionAsWatched(
 
 }
 
+
+// ============================================================
+// DRIVE PREVIEW
+// ============================================================
 
 function convertToPreviewUrl(
   url
@@ -1901,7 +2243,11 @@ function convertToPreviewUrl(
 }
 
 
-function closeReviewModalWindow() {
+// ============================================================
+// CLOSE VIDEO
+// ============================================================
+
+function closeVideoModal() {
 
   reviewModal.classList.add(
     "hidden"
@@ -1911,252 +2257,313 @@ function closeReviewModalWindow() {
   reviewVideoFrame.src =
     "";
 
-  currentReviewRow =
-  null;
-
-  reviewProblemMessage.textContent =
-    "";
-  
 }
 
 
 closeReviewModal.addEventListener(
   "click",
-  closeReviewModalWindow
+  closeVideoModal
 );
 
 
 reviewModalBackdrop.addEventListener(
   "click",
-  closeReviewModalWindow
+  closeVideoModal
 );
 
+
 // ============================================================
-// PROBLEM FORM STATE
+// CAMPUS DETAIL
 // ============================================================
 
-function updateProblemFieldsState() {
+function showCampusDetail(
+  campus
+) {
 
-  const enabled =
-    reviewHasProblem.checked;
+  const rows =
+    getProjectRows()
+      .filter(
+        function (row) {
+
+          return (
+            row.campus ===
+            campus
+          );
+
+        }
+      );
 
 
-  reviewProblemType.disabled =
-    !enabled;
+  const facultyMap =
+    {};
 
 
-  reviewProblemNote.disabled =
-    !enabled;
+  const yearMap =
+    {};
 
 
-  if (enabled) {
+  rows.forEach(
+    function (row) {
 
-    problemFields.classList.remove(
-      "disabled"
+      const faculty =
+        row.faculty ||
+        "ไม่ระบุ";
+
+
+      const year =
+        row.year_level ||
+        "ไม่ระบุ";
+
+
+      facultyMap[faculty] =
+        (
+          facultyMap[faculty] ||
+          0
+        ) + 1;
+
+
+      yearMap[year] =
+        (
+          yearMap[year] ||
+          0
+        ) + 1;
+
+    }
+  );
+
+
+  const watched =
+    rows.filter(
+      function (row) {
+
+        return (
+          row.review &&
+          row.review.watched
+        );
+
+      }
+    ).length;
+
+
+  campusModalTitle.textContent =
+    campus;
+
+
+  const faculties =
+    Object.entries(
+      facultyMap
+    )
+      .sort(
+        function (a, b) {
+
+          return (
+            b[1] -
+            a[1]
+          );
+
+        }
+      );
+
+
+  const years =
+    Object.entries(
+      yearMap
+    )
+      .sort();
+
+
+  campusModalContent.innerHTML =
+    `
+    <div class="modal-stat-grid">
+
+
+      <div class="modal-stat">
+
+        <div class="modal-stat-label">
+          ผู้ส่งทั้งหมด
+        </div>
+
+        <div class="modal-stat-value">
+          ${rows.length}
+        </div>
+
+      </div>
+
+
+      <div class="modal-stat">
+
+        <div class="modal-stat-label">
+          ดูแล้ว
+        </div>
+
+        <div class="modal-stat-value">
+          ${watched}
+        </div>
+
+      </div>
+
+
+      <div class="modal-stat">
+
+        <div class="modal-stat-label">
+          ยังไม่ดู
+        </div>
+
+        <div class="modal-stat-value">
+          ${rows.length - watched}
+        </div>
+
+      </div>
+
+
+    </div>
+
+
+
+    <div class="detail-section">
+
+      <h3>
+        แยกตามคณะ
+      </h3>
+
+      ${
+        faculties
+          .map(
+            function (
+              entry
+            ) {
+
+              return `
+              <div class="detail-row">
+
+                <span>
+                  ${escapeHtml(
+                    entry[0]
+                  )}
+                </span>
+
+                <strong>
+                  ${entry[1]} คน
+                </strong>
+
+              </div>
+              `;
+
+            }
+          )
+          .join("")
+      }
+
+    </div>
+
+
+
+    <div class="detail-section">
+
+      <h3>
+        แยกตามชั้นปี
+      </h3>
+
+      ${
+        years
+          .map(
+            function (
+              entry
+            ) {
+
+              return `
+              <div class="detail-row">
+
+                <span>
+                  ${escapeHtml(
+                    entry[0]
+                  )}
+                </span>
+
+                <strong>
+                  ${entry[1]} คน
+                </strong>
+
+              </div>
+              `;
+
+            }
+          )
+          .join("")
+      }
+
+    </div>
+
+
+
+    <button
+      id="modalCampusListButton"
+      type="button"
+      class="primary-button modal-list-button"
+    >
+      ดูรายชื่อเฉพาะวิทยาเขตนี้
+    </button>
+    `;
+
+
+  campusModal.classList.remove(
+    "hidden"
+  );
+
+
+  byId(
+    "modalCampusListButton"
+  )
+    .addEventListener(
+      "click",
+      function () {
+
+        closeCampusDetail();
+
+
+        filterCampus.value =
+          campus;
+
+
+        populateFilters();
+
+
+        filterCampus.value =
+          campus;
+
+
+        renderSubmissions();
+
+      }
     );
-
-  } else {
-
-    problemFields.classList.add(
-      "disabled"
-    );
-
-  }
 
 }
 
 
-reviewHasProblem.addEventListener(
-  "change",
-  function () {
-
-    updateProblemFieldsState();
-
-  }
-);
-
 // ============================================================
-// SAVE PROBLEM / FOLLOW-UP
+// CAMPUS CLOSE
 // ============================================================
 
-saveProblemButton.addEventListener(
+function closeCampusDetail() {
+
+  campusModal.classList.add(
+    "hidden"
+  );
+
+}
+
+
+closeCampusModal.addEventListener(
   "click",
-  async function () {
-
-    if (
-      !currentReviewRow
-    ) {
-
-      return;
-
-    }
-
-
-    const hasProblem =
-      reviewHasProblem.checked;
-
-
-    if (
-      hasProblem &&
-      !reviewProblemType.value
-    ) {
-
-      reviewProblemMessage.textContent =
-        "กรุณาเลือกประเภทปัญหา";
-
-
-      reviewProblemMessage.className =
-        "problem-save-message error";
-
-
-      return;
-
-    }
-
-
-    saveProblemButton.disabled =
-      true;
-
-
-    saveProblemButton.textContent =
-      "กำลังบันทึก...";
-
-
-    reviewProblemMessage.textContent =
-      "";
-
-
-    const now =
-      new Date()
-        .toISOString();
-
-
-    const currentReview =
-      currentReviewRow.review || {};
-
-
-    const payload = {
-
-      submission_id:
-        currentReviewRow.id,
-
-      watched:
-        Boolean(
-          currentReview.watched
-        ),
-
-      watched_at:
-        currentReview.watched_at ||
-        null,
-
-      has_problem:
-        hasProblem,
-
-      problem_type:
-        hasProblem
-          ? (
-              reviewProblemType.value ||
-              null
-            )
-          : null,
-
-      note:
-        hasProblem
-          ? (
-              reviewProblemNote
-                .value
-                .trim() ||
-              null
-            )
-          : null,
-
-      updated_at:
-        now
-
-    };
-
-
-    const result =
-      await client
-        .from(
-          "review_status"
-        )
-        .upsert(
-          payload,
-          {
-            onConflict:
-              "submission_id"
-          }
-        );
-
-
-    saveProblemButton.disabled =
-      false;
-
-
-    saveProblemButton.textContent =
-      "บันทึกสถานะ";
-
-
-    if (
-      result.error
-    ) {
-
-      console.error(
-        "Save problem error:",
-        result.error
-      );
-
-
-      reviewProblemMessage.textContent =
-        "บันทึกไม่สำเร็จ";
-
-
-      reviewProblemMessage.className =
-        "problem-save-message error";
-
-
-      return;
-
-    }
-
-
-    currentReviewRow.review = {
-
-      ...currentReview,
-
-      has_problem:
-        hasProblem,
-
-      problem_type:
-        payload.problem_type,
-
-      note:
-        payload.note
-
-    };
-
-
-    reviewProblemMessage.textContent =
-      hasProblem
-        ? "✓ บันทึกปัญหาเรียบร้อย"
-        : "✓ ยกเลิกสถานะปัญหาแล้ว";
-
-
-    reviewProblemMessage.className =
-      "problem-save-message success";
-
-
-    reviewCurrentStatus.innerHTML =
-      getStatusBadge(
-        currentReviewRow
-      );
-
-
-    renderDashboard();
-
-  }
+  closeCampusDetail
 );
+
+
+campusModalBackdrop.addEventListener(
+  "click",
+  closeCampusDetail
+);
+
 
 // ============================================================
 // FILTER EVENTS
@@ -2213,7 +2620,9 @@ clearFilters.addEventListener(
 
     resetFilters();
 
+
     populateFilters();
+
 
     renderSubmissions();
 
@@ -2222,7 +2631,7 @@ clearFilters.addEventListener(
 
 
 // ============================================================
-// RESET FILTERS
+// RESET FILTER
 // ============================================================
 
 function resetFilters() {
@@ -2250,299 +2659,7 @@ function resetFilters() {
 
 
 // ============================================================
-// CAMPUS DETAIL
-// ============================================================
-
-function showCampusDetail(
-  campus
-) {
-
-  const rows =
-    getProjectRows()
-      .filter(
-        function (row) {
-
-          return (
-            row.campus === campus
-          );
-
-        }
-      );
-
-
-  const facultyMap = {};
-
-  const yearMap = {};
-
-
-  rows.forEach(
-    function (row) {
-
-      const faculty =
-        row.faculty ||
-        "ไม่ระบุ";
-
-
-      const year =
-        row.year_level ||
-        "ไม่ระบุ";
-
-
-      facultyMap[faculty] =
-        (
-          facultyMap[faculty] ||
-          0
-        ) + 1;
-
-
-      yearMap[year] =
-        (
-          yearMap[year] ||
-          0
-        ) + 1;
-
-    }
-  );
-
-
-  const watched =
-    rows.filter(
-      function (row) {
-
-        return (
-          row.review &&
-          row.review.watched
-        );
-
-      }
-    ).length;
-
-
-  const problem =
-    rows.filter(
-      function (row) {
-
-        return (
-          row.review &&
-          row.review.has_problem
-        );
-
-      }
-    ).length;
-
-
-  const facultyEntries =
-    Object.entries(
-      facultyMap
-    ).sort(
-      function (a, b) {
-
-        return (
-          b[1] -
-          a[1]
-        );
-
-      }
-    );
-
-
-  const yearEntries =
-    Object.entries(
-      yearMap
-    ).sort();
-
-
-  campusModalTitle.textContent =
-    campus;
-
-
-  campusModalContent.innerHTML =
-    `
-    <div class="modal-stat-grid">
-
-      <div class="modal-stat">
-
-        <div class="modal-stat-label">
-          ผู้ส่งทั้งหมด
-        </div>
-
-        <div class="modal-stat-value">
-          ${rows.length}
-        </div>
-
-      </div>
-
-
-      <div class="modal-stat">
-
-        <div class="modal-stat-label">
-          ดูแล้ว
-        </div>
-
-        <div class="modal-stat-value">
-          ${watched}
-        </div>
-
-      </div>
-
-
-      <div class="modal-stat">
-
-        <div class="modal-stat-label">
-          มีปัญหา
-        </div>
-
-        <div class="modal-stat-value">
-          ${problem}
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="detail-section">
-
-      <h3>
-        แยกตามคณะ
-      </h3>
-
-      ${facultyEntries
-        .map(
-          function (entry) {
-
-            return `
-            <div class="detail-row">
-
-              <span>
-                ${escapeHtml(
-                  entry[0]
-                )}
-              </span>
-
-              <strong>
-                ${entry[1]} คน
-              </strong>
-
-            </div>
-            `;
-
-          }
-        )
-        .join("")
-      }
-
-    </div>
-
-
-    <div class="detail-section">
-
-      <h3>
-        แยกตามชั้นปี
-      </h3>
-
-      ${yearEntries
-        .map(
-          function (entry) {
-
-            return `
-            <div class="detail-row">
-
-              <span>
-                ${escapeHtml(
-                  entry[0]
-                )}
-              </span>
-
-              <strong>
-                ${entry[1]} คน
-              </strong>
-
-            </div>
-            `;
-
-          }
-        )
-        .join("")
-      }
-
-    </div>
-
-
-    <button
-      id="modalCampusListButton"
-      type="button"
-      class="primary-button modal-list-button"
-    >
-      ดูรายชื่อเฉพาะวิทยาเขตนี้
-    </button>
-    `;
-
-
-  campusModal.classList.remove(
-    "hidden"
-  );
-
-
-  const modalListButton =
-    byId(
-      "modalCampusListButton"
-    );
-
-
-  modalListButton.addEventListener(
-    "click",
-    function () {
-
-      closeCampusDetail();
-
-
-      filterCampus.value =
-        campus;
-
-
-      populateFilters();
-
-
-      filterCampus.value =
-        campus;
-
-
-      renderSubmissions();
-
-    }
-  );
-
-}
-
-
-// ============================================================
-// CLOSE CAMPUS MODAL
-// ============================================================
-
-function closeCampusDetail() {
-
-  campusModal.classList.add(
-    "hidden"
-  );
-
-}
-
-
-closeCampusModal.addEventListener(
-  "click",
-  closeCampusDetail
-);
-
-
-campusModalBackdrop.addEventListener(
-  "click",
-  closeCampusDetail
-);
-
-
-// ============================================================
-// ESCAPE HTML
+// ESCAPE
 // ============================================================
 
 function escapeHtml(value) {
@@ -2602,7 +2719,8 @@ async function showDashboard(
 
 
   userEmail.textContent =
-    user.email || "";
+    user.email ||
+    "";
 
 
   await loadDashboardData();
@@ -2622,7 +2740,8 @@ async function initializeApp() {
 
 
   const result =
-    await client.auth.getSession();
+    await client.auth
+      .getSession();
 
 
   if (
@@ -2630,7 +2749,6 @@ async function initializeApp() {
   ) {
 
     console.error(
-      "Session error:",
       result.error
     );
 
