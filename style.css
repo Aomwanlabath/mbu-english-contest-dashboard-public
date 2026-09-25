@@ -1283,3 +1283,198 @@ button {
   }
 
 }
+
+/* =========================================================
+   PROBLEM / FOLLOW-UP
+========================================================= */
+
+.review-problem-panel {
+  padding: 18px 20px 20px;
+
+  border-top:
+    1px solid #e6ebf2;
+
+  background: #ffffff;
+}
+
+.review-problem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 18px;
+}
+
+.review-problem-header h3 {
+  margin:
+    4px 0 0;
+
+  color: #17263d;
+
+  font-size: 15px;
+}
+
+.problem-toggle {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding:
+    9px 12px;
+
+  border:
+    1px solid #eadada;
+
+  border-radius: 9px;
+
+  background: #fffafa;
+
+  color: #a73c3c;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.problem-toggle input {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+}
+
+.problem-fields {
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 0.7fr)
+    minmax(260px, 1.3fr);
+
+  gap: 12px;
+
+  margin-top: 16px;
+
+  transition:
+    opacity 0.2s;
+}
+
+.problem-fields.disabled {
+  opacity: 0.45;
+}
+
+.problem-field label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #536176;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.problem-field select,
+.problem-field textarea {
+  width: 100%;
+
+  border:
+    1px solid #d9e1eb;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #344258;
+
+  padding: 9px 10px;
+
+  outline: none;
+}
+
+.problem-field select {
+  height: 40px;
+}
+
+.problem-field textarea {
+  min-height: 80px;
+
+  resize: vertical;
+}
+
+.problem-field select:focus,
+.problem-field textarea:focus {
+  border-color: #5f91db;
+
+  box-shadow:
+    0 0 0 3px rgba(55, 117, 214, 0.08);
+}
+
+.review-problem-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 14px;
+
+  margin-top: 14px;
+}
+
+.problem-save-message {
+  min-height: 18px;
+
+  font-size: 11px;
+}
+
+.problem-save-message.success {
+  color: #148154;
+}
+
+.problem-save-message.error {
+  color: #bd4040;
+}
+
+
+/* Problem row */
+
+.submission-table tr.problem-row {
+  background: #fff8f8;
+}
+
+.submission-table tr.problem-row:hover {
+  background: #fff1f1;
+}
+
+.submission-table tr.problem-row .submission-name {
+  color: #a83c3c;
+}
+
+
+@media (max-width: 760px) {
+
+  .review-problem-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .problem-toggle {
+    width: 100%;
+  }
+
+  .problem-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .review-problem-footer {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+  .review-problem-footer .primary-button {
+    width: 100%;
+  }
+
+}
