@@ -1,0 +1,374 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family:
+    Arial,
+    "Noto Sans Thai",
+    sans-serif;
+}
+
+body {
+  background: #f4f7fb;
+  color: #12213a;
+}
+
+
+/* =========================
+   UTILITIES
+========================= */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+.login-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      #2b6de8 0,
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #071a3c,
+      #0d3572
+    );
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 42px;
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.22);
+}
+
+.logo-circle {
+  width: 62px;
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: #0d3572;
+  color: white;
+
+  font-weight: 800;
+  letter-spacing: 1px;
+
+  margin-bottom: 28px;
+}
+
+.login-card h1 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.login-description {
+  color: #728096;
+  line-height: 1.6;
+
+  margin-bottom: 32px;
+}
+
+label {
+  display: block;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  margin-bottom: 8px;
+}
+
+input {
+  width: 100%;
+
+  height: 48px;
+
+  border: 1px solid #d9e0ea;
+  border-radius: 10px;
+
+  padding: 0 14px;
+
+  font-size: 15px;
+
+  margin-bottom: 18px;
+
+  outline: none;
+}
+
+input:focus {
+  border-color: #2266d8;
+
+  box-shadow:
+    0 0 0 3px rgba(34, 102, 216, 0.10);
+}
+
+button {
+  cursor: pointer;
+}
+
+#loginButton {
+  width: 100%;
+  height: 50px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #0d3572;
+  color: white;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+#loginButton:hover {
+  background: #164b98;
+}
+
+.error-message {
+  min-height: 22px;
+
+  color: #c73939;
+
+  font-size: 13px;
+
+  margin-top: 14px;
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard-page {
+  min-height: 100vh;
+}
+
+.topbar {
+  height: 86px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 5vw;
+
+  background: white;
+
+  border-bottom: 1px solid #e7ebf1;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+
+  color: #3971d2;
+
+  letter-spacing: 1.5px;
+
+  margin-bottom: 4px;
+}
+
+.topbar h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.topbar-right {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+
+  font-size: 13px;
+  color: #65748a;
+}
+
+.secondary-button {
+  border: 1px solid #d8dfeb;
+
+  background: white;
+
+  border-radius: 9px;
+
+  padding: 9px 15px;
+}
+
+main {
+  padding: 34px 5vw;
+}
+
+.welcome-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: white;
+
+  border: 1px solid #e3e8ef;
+  border-radius: 16px;
+
+  padding: 18px 22px;
+
+  margin-bottom: 22px;
+}
+
+.welcome-card > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+
+  background: #20a467;
+
+  border-radius: 50%;
+}
+
+.project-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+.project-card {
+  min-height: 250px;
+
+  background: white;
+
+  border: 1px solid #e3e8ef;
+  border-radius: 20px;
+
+  padding: 28px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card::after {
+  content: "";
+
+  width: 130px;
+  height: 130px;
+
+  position: absolute;
+  right: -40px;
+  bottom: -40px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(37, 104, 218, 0.07);
+}
+
+.project-number {
+  color: #3470d8;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.project-card h3 {
+  min-height: 65px;
+
+  margin:
+    14px 0 20px;
+
+  font-size: 21px;
+
+  line-height: 1.4;
+}
+
+.big-number {
+  font-size: 54px;
+  font-weight: 800;
+
+  color: #0c3476;
+
+  margin-bottom: 6px;
+}
+
+.project-card span {
+  color: #788598;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 700px) {
+
+  .login-card {
+    padding: 28px;
+  }
+
+  .topbar {
+    height: auto;
+
+    padding:
+      18px 20px;
+
+    align-items: flex-start;
+  }
+
+  .topbar-right {
+    flex-direction: column;
+    align-items: flex-end;
+
+    gap: 8px;
+  }
+
+  main {
+    padding:
+      20px;
+  }
+
+  .welcome-card {
+    align-items: flex-start;
+
+    gap: 12px;
+
+    flex-direction: column;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
