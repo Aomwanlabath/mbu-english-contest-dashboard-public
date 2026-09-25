@@ -1181,7 +1181,8 @@ button {
 
   max-height: 92vh;
 
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   background: #ffffff;
 
@@ -1210,8 +1211,8 @@ button {
 
   width: 100%;
   height: min(
-    68vh,
-    620px
+    52vh,
+    500px
   );
 
   border: 0;
