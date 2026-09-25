@@ -137,6 +137,24 @@ const reviewOriginalLink =
 const closeReviewModal =
   byId("closeReviewModal");
 
+const reviewHasProblem =
+  byId("reviewHasProblem");
+
+const problemFields =
+  byId("problemFields");
+
+const reviewProblemType =
+  byId("reviewProblemType");
+
+const reviewProblemNote =
+  byId("reviewProblemNote");
+
+const reviewProblemMessage =
+  byId("reviewProblemMessage");
+
+const saveProblemButton =
+  byId("saveProblemButton");
+
 
 // ============================================================
 // STATE
@@ -145,6 +163,8 @@ const closeReviewModal =
 let allSubmissions = [];
 
 let currentProject = "all";
+
+let currentReviewRow = null;
 
 
 // ============================================================
@@ -1482,6 +1502,22 @@ function renderDesktopRow(row) {
     );
   }
 
+  if (
+  row.review &&
+  row.review.has_problem
+) {
+
+  tr.classList.remove(
+    "watched-row"
+  );
+
+
+  tr.classList.add(
+    "problem-row"
+  );
+
+}
+
   submissionTableBody.appendChild(
     tr
   );
@@ -1632,6 +1668,9 @@ async function openReviewModal(
   row
 ) {
 
+  currentReviewRow =
+  row;
+
   reviewModalName.textContent =
     row.name || "ผลงาน";
 
@@ -1662,7 +1701,37 @@ async function openReviewModal(
       row
     );
 
-
+  reviewHasProblem.checked =
+    Boolean(
+      row.review &&
+      row.review.has_problem
+    );
+  
+  
+  reviewProblemType.value =
+    (
+      row.review &&
+      row.review.problem_type
+    ) || "";
+  
+  
+  reviewProblemNote.value =
+    (
+      row.review &&
+      row.review.note
+    ) || "";
+  
+  
+  reviewProblemMessage.textContent =
+    "";
+  
+  
+  reviewProblemMessage.className =
+    "problem-save-message";
+  
+  
+  updateProblemFieldsState();
+  
   reviewModal.classList.remove(
     "hidden"
   );
@@ -1842,6 +1911,12 @@ function closeReviewModalWindow() {
   reviewVideoFrame.src =
     "";
 
+  currentReviewRow =
+  null;
+
+  reviewProblemMessage.textContent =
+    "";
+  
 }
 
 
@@ -1854,6 +1929,233 @@ closeReviewModal.addEventListener(
 reviewModalBackdrop.addEventListener(
   "click",
   closeReviewModalWindow
+);
+
+// ============================================================
+// PROBLEM FORM STATE
+// ============================================================
+
+function updateProblemFieldsState() {
+
+  const enabled =
+    reviewHasProblem.checked;
+
+
+  reviewProblemType.disabled =
+    !enabled;
+
+
+  reviewProblemNote.disabled =
+    !enabled;
+
+
+  if (enabled) {
+
+    problemFields.classList.remove(
+      "disabled"
+    );
+
+  } else {
+
+    problemFields.classList.add(
+      "disabled"
+    );
+
+  }
+
+}
+
+
+reviewHasProblem.addEventListener(
+  "change",
+  function () {
+
+    updateProblemFieldsState();
+
+  }
+);
+
+// ============================================================
+// SAVE PROBLEM / FOLLOW-UP
+// ============================================================
+
+saveProblemButton.addEventListener(
+  "click",
+  async function () {
+
+    if (
+      !currentReviewRow
+    ) {
+
+      return;
+
+    }
+
+
+    const hasProblem =
+      reviewHasProblem.checked;
+
+
+    if (
+      hasProblem &&
+      !reviewProblemType.value
+    ) {
+
+      reviewProblemMessage.textContent =
+        "กรุณาเลือกประเภทปัญหา";
+
+
+      reviewProblemMessage.className =
+        "problem-save-message error";
+
+
+      return;
+
+    }
+
+
+    saveProblemButton.disabled =
+      true;
+
+
+    saveProblemButton.textContent =
+      "กำลังบันทึก...";
+
+
+    reviewProblemMessage.textContent =
+      "";
+
+
+    const now =
+      new Date()
+        .toISOString();
+
+
+    const currentReview =
+      currentReviewRow.review || {};
+
+
+    const payload = {
+
+      submission_id:
+        currentReviewRow.id,
+
+      watched:
+        Boolean(
+          currentReview.watched
+        ),
+
+      watched_at:
+        currentReview.watched_at ||
+        null,
+
+      has_problem:
+        hasProblem,
+
+      problem_type:
+        hasProblem
+          ? (
+              reviewProblemType.value ||
+              null
+            )
+          : null,
+
+      note:
+        hasProblem
+          ? (
+              reviewProblemNote
+                .value
+                .trim() ||
+              null
+            )
+          : null,
+
+      updated_at:
+        now
+
+    };
+
+
+    const result =
+      await client
+        .from(
+          "review_status"
+        )
+        .upsert(
+          payload,
+          {
+            onConflict:
+              "submission_id"
+          }
+        );
+
+
+    saveProblemButton.disabled =
+      false;
+
+
+    saveProblemButton.textContent =
+      "บันทึกสถานะ";
+
+
+    if (
+      result.error
+    ) {
+
+      console.error(
+        "Save problem error:",
+        result.error
+      );
+
+
+      reviewProblemMessage.textContent =
+        "บันทึกไม่สำเร็จ";
+
+
+      reviewProblemMessage.className =
+        "problem-save-message error";
+
+
+      return;
+
+    }
+
+
+    currentReviewRow.review = {
+
+      ...currentReview,
+
+      has_problem:
+        hasProblem,
+
+      problem_type:
+        payload.problem_type,
+
+      note:
+        payload.note
+
+    };
+
+
+    reviewProblemMessage.textContent =
+      hasProblem
+        ? "✓ บันทึกปัญหาเรียบร้อย"
+        : "✓ ยกเลิกสถานะปัญหาแล้ว";
+
+
+    reviewProblemMessage.className =
+      "problem-save-message success";
+
+
+    reviewCurrentStatus.innerHTML =
+      getStatusBadge(
+        currentReviewRow
+      );
+
+
+    renderDashboard();
+
+  }
 );
 
 // ============================================================
