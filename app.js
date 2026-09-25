@@ -1339,6 +1339,8 @@ function renderSubmissions() {
     }
   );
 
+attachReviewButtons();
+  
 }
 
 
@@ -1401,22 +1403,21 @@ function renderDesktopRow(row) {
 
 
   const videoHtml =
-    row.video_url
-      ? `
-        <a
-          class="video-button"
-          href="${escapeAttribute(row.video_url)}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ▶ ดูผลงาน
-        </a>
-        `
-      : `
-        <span class="no-video">
-          ไม่มีลิงก์
-        </span>
-        `;
+  row.video_url
+    ? `
+      <button
+        type="button"
+        class="video-button open-review-button"
+        data-id="${row.id}"
+      >
+        ▶ ดูผลงาน
+      </button>
+      `
+    : `
+      <span class="no-video">
+        ไม่มีลิงก์
+      </span>
+      `;
 
 
   tr.innerHTML =
@@ -1472,13 +1473,20 @@ function renderDesktopRow(row) {
     </td>
     `;
 
+  if (
+    row.review &&
+    row.review.watched
+  ) {
+    tr.classList.add(
+      "watched-row"
+    );
+  }
 
   submissionTableBody.appendChild(
     tr
   );
 
 }
-
 
 // ============================================================
 // MOBILE CARD
@@ -1499,14 +1507,13 @@ function renderMobileCard(row) {
   const videoHtml =
     row.video_url
       ? `
-        <a
-          class="video-button"
-          href="${escapeAttribute(row.video_url)}"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          class="video-button open-review-button"
+          data-id="${row.id}"
         >
           ▶ ดูผลงาน
-        </a>
+        </button>
         `
       : `
         <span class="no-video">
@@ -1568,6 +1575,286 @@ function renderMobileCard(row) {
 
 }
 
+// ============================================================
+// REVIEW VIDEO
+// ============================================================
+
+function attachReviewButtons() {
+
+  const buttons =
+    document.querySelectorAll(
+      ".open-review-button"
+    );
+
+
+  buttons.forEach(
+    function (button) {
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          const submissionId =
+            button.dataset.id;
+
+
+          const row =
+            allSubmissions.find(
+              function (item) {
+
+                return (
+                  item.id ===
+                  submissionId
+                );
+
+              }
+            );
+
+
+          if (row) {
+
+            openReviewModal(
+              row
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+async function openReviewModal(
+  row
+) {
+
+  reviewModalName.textContent =
+    row.name || "ผลงาน";
+
+
+  reviewModalMeta.textContent =
+    [
+      row.project_name,
+      row.campus,
+      row.faculty,
+      row.year_level
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+
+  reviewVideoFrame.src =
+    convertToPreviewUrl(
+      row.video_url
+    );
+
+
+  reviewOriginalLink.href =
+    row.video_url || "#";
+
+
+  reviewCurrentStatus.innerHTML =
+    getStatusBadge(
+      row
+    );
+
+
+  reviewModal.classList.remove(
+    "hidden"
+  );
+
+
+  if (
+    !row.review ||
+    !row.review.watched
+  ) {
+
+    await markSubmissionAsWatched(
+      row
+    );
+
+  }
+
+}
+
+
+async function markSubmissionAsWatched(
+  row
+) {
+
+  const now =
+    new Date()
+      .toISOString();
+
+
+  const currentReview =
+    row.review || {};
+
+
+  const payload = {
+
+    submission_id:
+      row.id,
+
+    watched:
+      true,
+
+    watched_at:
+      now,
+
+    has_problem:
+      Boolean(
+        currentReview.has_problem
+      ),
+
+    problem_type:
+      currentReview.problem_type ||
+      null,
+
+    note:
+      currentReview.note ||
+      null,
+
+    updated_at:
+      now
+
+  };
+
+
+  const result =
+    await client
+      .from(
+        "review_status"
+      )
+      .upsert(
+        payload,
+        {
+          onConflict:
+            "submission_id"
+        }
+      );
+
+
+  if (
+    result.error
+  ) {
+
+    console.error(
+      "Mark watched error:",
+      result.error
+    );
+
+    return;
+  }
+
+
+  row.review = {
+
+    ...currentReview,
+
+    watched:
+      true,
+
+    watched_at:
+      now
+
+  };
+
+
+  reviewCurrentStatus.innerHTML =
+    getStatusBadge(
+      row
+    );
+
+
+  renderDashboard();
+
+}
+
+
+function convertToPreviewUrl(
+  url
+) {
+
+  if (!url) {
+
+    return "";
+
+  }
+
+
+  let match =
+    url.match(
+      /drive\.google\.com\/file\/d\/([^/]+)/
+    );
+
+
+  if (
+    match &&
+    match[1]
+  ) {
+
+    return (
+      "https://drive.google.com/file/d/" +
+      match[1] +
+      "/preview"
+    );
+
+  }
+
+
+  match =
+    url.match(
+      /docs\.google\.com\/videos\/d\/([^/]+)/
+    );
+
+
+  if (
+    match &&
+    match[1]
+  ) {
+
+    return (
+      "https://drive.google.com/file/d/" +
+      match[1] +
+      "/preview"
+    );
+
+  }
+
+
+  return url;
+
+}
+
+
+function closeReviewModalWindow() {
+
+  reviewModal.classList.add(
+    "hidden"
+  );
+
+
+  reviewVideoFrame.src =
+    "";
+
+}
+
+
+closeReviewModal.addEventListener(
+  "click",
+  closeReviewModalWindow
+);
+
+
+reviewModalBackdrop.addEventListener(
+  "click",
+  closeReviewModalWindow
+);
 
 // ============================================================
 // FILTER EVENTS
