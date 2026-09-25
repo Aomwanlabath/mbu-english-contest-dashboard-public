@@ -40,9 +40,7 @@
 
       <form id="loginForm">
 
-        <label>
-          Email
-        </label>
+        <label>Email</label>
 
         <input
           id="email"
@@ -52,9 +50,7 @@
           required
         >
 
-        <label>
-          Password
-        </label>
+        <label>Password</label>
 
         <input
           id="password"
@@ -95,7 +91,6 @@
     <header class="topbar">
 
       <div>
-
         <div class="eyebrow">
           MBU ENGLISH CONTEST
         </div>
@@ -103,11 +98,9 @@
         <h2>
           Executive Dashboard
         </h2>
-
       </div>
 
       <div class="topbar-right">
-
         <span id="userEmail"></span>
 
         <button
@@ -116,88 +109,241 @@
         >
           ออกจากระบบ
         </button>
-
       </div>
 
     </header>
 
 
-    <main>
+    <main class="dashboard-shell">
 
-      <div class="welcome-card">
+      <!-- PROJECT SWITCHER -->
 
-        <div>
+      <section class="project-switcher">
 
-          <div class="status-dot"></div>
+        <button
+          class="project-tab active"
+          data-project="all"
+        >
+          ทั้งหมด
+        </button>
 
-          <span>
-            เชื่อมต่อฐานข้อมูลสำเร็จ
-          </span>
+        <button
+          class="project-tab"
+          data-project="campus-pride"
+        >
+          Project 01
+        </button>
 
+        <button
+          class="project-tab"
+          data-project="my-life-mbu"
+        >
+          Project 02
+        </button>
+
+      </section>
+
+
+      <!-- KPI -->
+
+      <section class="kpi-grid">
+
+        <div class="kpi-card">
+          <span>ผู้ส่งผลงาน</span>
+          <strong id="kpiTotal">0</strong>
         </div>
 
-        <strong id="recordCount">
-          กำลังโหลดข้อมูล...
-        </strong>
+        <div class="kpi-card">
+          <span>วิทยาเขต / วิทยาลัย</span>
+          <strong id="kpiCampus">0</strong>
+        </div>
 
-      </div>
+        <div class="kpi-card">
+          <span>คณะ</span>
+          <strong id="kpiFaculty">0</strong>
+        </div>
+
+        <div class="kpi-card">
+          <span>รายการส่งซ้ำ</span>
+          <strong id="kpiDuplicate">0</strong>
+        </div>
+
+      </section>
 
 
-      <div class="project-grid">
+      <!-- MAIN CONTENT -->
 
-        <div class="project-card">
+      <section class="main-grid">
 
-          <div class="project-number">
-            Project 01
+        <!-- CAMPUS OVERVIEW -->
+
+        <div class="panel campus-panel">
+
+          <div class="panel-header">
+
+            <div>
+              <div class="panel-kicker">
+                OVERVIEW
+              </div>
+
+              <h3>
+                ผู้ส่งผลงานแยกตามวิทยาเขต / วิทยาลัย
+              </h3>
+            </div>
+
           </div>
-
-          <h3>
-            My University,<br>
-            My Campus, My Pride
-          </h3>
 
           <div
-            id="project1Count"
-            class="big-number"
-          >
-            -
-          </div>
-
-          <span>
-            ผู้ส่งผลงานไม่ซ้ำ
-          </span>
+            id="campusList"
+            class="campus-list"
+          ></div>
 
         </div>
 
 
-        <div class="project-card">
+        <!-- SUBMISSIONS -->
 
-          <div class="project-number">
-            Project 02
+        <div class="panel submissions-panel">
+
+          <div class="panel-header submissions-header">
+
+            <div>
+              <div class="panel-kicker">
+                SUBMISSIONS
+              </div>
+
+              <h3 id="submissionTitle">
+                รายชื่อผู้ส่งผลงานทั้งหมด
+              </h3>
+            </div>
+
+            <div id="resultCount" class="result-count">
+              0 รายการ
+            </div>
+
           </div>
 
-          <h3>
-            My Life at MBU
-          </h3>
+
+          <!-- FILTERS -->
+
+          <div class="filter-bar">
+
+            <select id="filterYear">
+              <option value="">ทุกชั้นปี</option>
+            </select>
+
+            <select id="filterCampus">
+              <option value="">ทุกวิทยาเขต</option>
+            </select>
+
+            <select id="filterFaculty">
+              <option value="">ทุกคณะ</option>
+            </select>
+
+            <select id="filterStatus">
+              <option value="">ทุกสถานะ</option>
+              <option value="unwatched">ยังไม่ดู</option>
+              <option value="watched">ดูแล้ว</option>
+              <option value="problem">มีปัญหา</option>
+            </select>
+
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="ค้นหาชื่อ / รหัสนักศึกษา..."
+            >
+
+            <button
+              id="clearFilters"
+              class="secondary-button"
+            >
+              ล้างตัวกรอง
+            </button>
+
+          </div>
+
+
+          <!-- TABLE -->
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>ชื่อ</th>
+                  <th>รหัสนักศึกษา</th>
+                  <th>วิทยาเขต</th>
+                  <th>คณะ</th>
+                  <th>ชั้นปี</th>
+                  <th>ส่งซ้ำ</th>
+                  <th>ผลงาน</th>
+                </tr>
+              </thead>
+
+              <tbody id="submissionTableBody"></tbody>
+
+            </table>
+
+          </div>
+
+
+          <!-- MOBILE CARDS -->
 
           <div
-            id="project2Count"
-            class="big-number"
-          >
-            -
-          </div>
-
-          <span>
-            ผู้ส่งผลงานไม่ซ้ำ
-          </span>
+            id="submissionCards"
+            class="submission-cards"
+          ></div>
 
         </div>
 
-      </div>
+      </section>
 
     </main>
 
   </section>
+
+
+  <!-- CAMPUS DETAIL MODAL -->
+
+  <div
+    id="campusModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-backdrop" data-close-modal="true"></div>
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <div>
+          <div class="panel-kicker">
+            CAMPUS DETAIL
+          </div>
+
+          <h3 id="campusModalTitle">
+            รายละเอียดวิทยาเขต
+          </h3>
+        </div>
+
+        <button
+          id="closeCampusModal"
+          class="icon-button"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div
+        id="campusModalContent"
+        class="modal-content"
+      ></div>
+
+    </div>
+
+  </div>
 
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
