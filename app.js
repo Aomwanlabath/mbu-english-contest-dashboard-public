@@ -1,1215 +1,610 @@
-const client = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-// ======================================================
-// ELEMENTS
-// ======================================================
+  <title>MBU English Contest Dashboard</title>
 
-const loginPage =
-  document.getElementById("loginPage");
+  <link
+    rel="stylesheet"
+    href="style.css?v=20260926-2"
+  >
+</head>
 
-const dashboardPage =
-  document.getElementById("dashboardPage");
+<body>
 
-const loginForm =
-  document.getElementById("loginForm");
+  <!-- =========================
+       LOGIN
+  ========================== -->
 
-const loginButton =
-  document.getElementById("loginButton");
+  <section id="loginPage" class="login-page">
 
-const loginError =
-  document.getElementById("loginError");
+    <div class="login-card">
 
-const logoutButton =
-  document.getElementById("logoutButton");
+      <div class="logo-circle">MBU</div>
 
-const userEmail =
-  document.getElementById("userEmail");
+      <h1>English Contest Dashboard</h1>
 
+      <p class="login-description">
+        ระบบติดตามผลงานโครงการประกวดคลิปภาษาอังกฤษ
+      </p>
 
-const kpiTotal =
-  document.getElementById("kpiTotal");
+      <form id="loginForm">
 
-const kpiCampus =
-  document.getElementById("kpiCampus");
+        <label>Email</label>
 
-const kpiFaculty =
-  document.getElementById("kpiFaculty");
+        <input
+          id="email"
+          type="email"
+          placeholder="name@example.com"
+          autocomplete="email"
+          required
+        >
 
-const kpiDuplicate =
-  document.getElementById("kpiDuplicate");
+        <label>Password</label>
 
+        <input
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        >
 
-const campusList =
-  document.getElementById("campusList");
+        <button
+          type="submit"
+          id="loginButton"
+        >
+          เข้าสู่ระบบ
+        </button>
 
-const submissionTableBody =
-  document.getElementById("submissionTableBody");
+        <div
+          id="loginError"
+          class="error-message"
+        ></div>
 
-const submissionCards =
-  document.getElementById("submissionCards");
+      </form>
 
-const resultCount =
-  document.getElementById("resultCount");
+    </div>
 
-const submissionTitle =
-  document.getElementById("submissionTitle");
+  </section>
 
 
-const filterYear =
-  document.getElementById("filterYear");
+  <!-- =========================
+       DASHBOARD
+  ========================== -->
 
-const filterCampus =
-  document.getElementById("filterCampus");
+  <section
+    id="dashboardPage"
+    class="dashboard-page hidden"
+  >
 
-const filterFaculty =
-  document.getElementById("filterFaculty");
+    <header class="topbar">
 
-const filterStatus =
-  document.getElementById("filterStatus");
+      <div>
 
-const searchInput =
-  document.getElementById("searchInput");
+        <div class="eyebrow">
+          MBU ENGLISH CONTEST
+        </div>
 
-const clearFilters =
-  document.getElementById("clearFilters");
+        <h2>
+          Executive Dashboard
+        </h2>
 
+      </div>
 
-const campusModal =
-  document.getElementById("campusModal");
+      <div class="topbar-right">
 
-const campusModalTitle =
-  document.getElementById("campusModalTitle");
+        <span id="userEmail"></span>
 
-const campusModalContent =
-  document.getElementById("campusModalContent");
+        <button
+          id="logoutButton"
+          class="secondary-button"
+        >
+          ออกจากระบบ
+        </button>
 
-const closeCampusModal =
-  document.getElementById("closeCampusModal");
+      </div>
 
+    </header>
 
-// ======================================================
-// STATE
-// ======================================================
 
-let allSubmissions = [];
+    <main class="dashboard-shell">
 
-let currentProject = "all";
+      <!-- =========================
+           PROJECT SWITCHER
+      ========================== -->
 
+      <section class="project-switcher">
 
-// ======================================================
-// LOGIN
-// ======================================================
-
-loginForm.addEventListener(
-  "submit",
-  async (event) => {
-
-    event.preventDefault();
-
-    loginError.textContent = "";
-
-    loginButton.disabled = true;
-    loginButton.textContent =
-      "กำลังเข้าสู่ระบบ...";
+        <button
+          class="project-tab active"
+          data-project="all"
+        >
+          ทั้งหมด
+        </button>
 
-    const email =
-      document
-        .getElementById("email")
-        .value
-        .trim();
+        <button
+          class="project-tab"
+          data-project="campus-pride"
+        >
+          Project 01
+        </button>
 
-    const password =
-      document
-        .getElementById("password")
-        .value;
+        <button
+          class="project-tab"
+          data-project="my-life-mbu"
+        >
+          Project 02
+        </button>
 
-    const {
-      data,
-      error
-    } =
-      await client.auth.signInWithPassword({
-        email,
-        password
-      });
+      </section>
 
-    if (error) {
 
-      loginError.textContent =
-        "Email หรือ Password ไม่ถูกต้อง";
+      <!-- =========================
+           KPI
+      ========================== -->
 
-      loginButton.disabled = false;
-      loginButton.textContent =
-        "เข้าสู่ระบบ";
+      <section class="kpi-grid">
 
-      return;
-    }
+        <div class="kpi-card">
+          <span>ผู้ส่งผลงาน</span>
+          <strong id="kpiTotal">0</strong>
+        </div>
 
-    await showDashboard(data.user);
+        <div class="kpi-card">
+          <span>วิทยาเขต / วิทยาลัย</span>
+          <strong id="kpiCampus">0</strong>
+        </div>
 
-    loginButton.disabled = false;
-    loginButton.textContent =
-      "เข้าสู่ระบบ";
-  }
-);
+        <div class="kpi-card">
+          <span>คณะ</span>
+          <strong id="kpiFaculty">0</strong>
+        </div>
 
+        <div class="kpi-card success">
+          <span>ดูแล้ว</span>
+          <strong id="kpiWatched">0</strong>
+        </div>
 
-// ======================================================
-// LOGOUT
-// ======================================================
+        <div class="kpi-card pending">
+          <span>ยังไม่ดู</span>
+          <strong id="kpiUnwatched">0</strong>
+        </div>
 
-logoutButton.addEventListener(
-  "click",
-  async () => {
+        <div class="kpi-card problem">
+          <span>มีปัญหา</span>
+          <strong id="kpiProblem">0</strong>
+        </div>
 
-    await client.auth.signOut();
+      </section>
 
-    dashboardPage.classList.add(
-      "hidden"
-    );
 
-    loginPage.classList.remove(
-      "hidden"
-    );
+      <!-- =========================
+           MAIN
+      ========================== -->
 
-    loginForm.reset();
-  }
-);
+      <section class="main-grid">
 
+        <!-- CAMPUS -->
 
-// ======================================================
-// LOAD DATA
-// ======================================================
+        <div class="panel campus-panel">
 
-async function loadSubmissions() {
+          <div class="panel-header">
 
-  const {
-    data,
-    error
-  } =
-    await client
-      .from("submissions")
-      .select(`
-        id,
-        project_id,
-        project_name,
-        student_id,
-        name,
-        campus,
-        faculty,
-        program,
-        year_level,
-        video_url,
-        duplicate_count,
-        submitted_at
-      `)
-      .order("name", {
-        ascending: true
-      });
+            <div class="panel-kicker">
+              OVERVIEW
+            </div>
 
-
-  if (error) {
-
-    console.error(error);
-
-    alert(
-      "โหลดข้อมูลไม่สำเร็จ"
-    );
-
-    return;
-  }
-
-
-  allSubmissions =
-    data || [];
-
-
-  populateFilters();
-
-  renderDashboard();
-}
-
-
-// ======================================================
-// PROJECT FILTER
-// ======================================================
-
-document
-  .querySelectorAll(".project-tab")
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        document
-          .querySelectorAll(".project-tab")
-          .forEach(tab =>
-            tab.classList.remove("active")
-          );
-
-        button.classList.add(
-          "active"
-        );
-
-        currentProject =
-          button.dataset.project;
-
-        resetFilters();
-
-        renderDashboard();
-      }
-    );
-
-  });
-
-
-// ======================================================
-// FILTER OPTIONS
-// ======================================================
-
-function populateFilters() {
-
-  populateSelect(
-    filterYear,
-    uniqueValues(
-      allSubmissions,
-      "year_level"
-    ),
-    "ทุกชั้นปี"
-  );
-
-  populateSelect(
-    filterCampus,
-    uniqueValues(
-      allSubmissions,
-      "campus"
-    ),
-    "ทุกวิทยาเขต"
-  );
-
-  populateSelect(
-    filterFaculty,
-    uniqueValues(
-      allSubmissions,
-      "faculty"
-    ),
-    "ทุกคณะ"
-  );
-}
-
-
-function uniqueValues(
-  rows,
-  field
-) {
-
-  return [
-    ...new Set(
-      rows
-        .map(row => row[field])
-        .filter(Boolean)
-    )
-  ].sort((a, b) =>
-    a.localeCompare(
-      b,
-      "th"
-    )
-  );
-}
-
-
-function populateSelect(
-  element,
-  values,
-  firstLabel
-) {
-
-  element.innerHTML =
-    `<option value="">${firstLabel}</option>`;
-
-  values.forEach(value => {
-
-    const option =
-      document.createElement(
-        "option"
-      );
-
-    option.value = value;
-    option.textContent = value;
-
-    element.appendChild(
-      option
-    );
-  });
-}
-
-
-// ======================================================
-// MAIN RENDER
-// ======================================================
-
-function renderDashboard() {
-
-  const projectRows =
-    getProjectRows();
-
-  renderKPIs(
-    projectRows
-  );
-
-  renderCampusOverview(
-    projectRows
-  );
-
-  renderSubmissions();
-}
-
-
-// ======================================================
-// PROJECT ROWS
-// ======================================================
-
-function getProjectRows() {
-
-  if (
-    currentProject === "all"
-  ) {
-    return allSubmissions;
-  }
-
-  return allSubmissions.filter(
-    row =>
-      row.project_id ===
-      currentProject
-  );
-}
-
-
-// ======================================================
-// KPI
-// ======================================================
-
-function renderKPIs(rows) {
-
-  kpiTotal.textContent =
-    rows.length;
-
-  kpiCampus.textContent =
-    uniqueValues(
-      rows,
-      "campus"
-    ).length;
-
-  kpiFaculty.textContent =
-    uniqueValues(
-      rows,
-      "faculty"
-    ).length;
-
-  const duplicateCount =
-    rows.reduce(
-      (sum, row) =>
-        sum +
-        Math.max(
-          (row.duplicate_count || 1) - 1,
-          0
-        ),
-      0
-    );
-
-  kpiDuplicate.textContent =
-    duplicateCount;
-}
-
-
-// ======================================================
-// CAMPUS OVERVIEW
-// ======================================================
-
-function renderCampusOverview(
-  rows
-) {
-
-  const grouped = {};
-
-
-  rows.forEach(row => {
-
-    const campus =
-      row.campus ||
-      "ไม่ระบุ";
-
-    if (!grouped[campus]) {
-      grouped[campus] = [];
-    }
-
-    grouped[campus].push(
-      row
-    );
-  });
-
-
-  const campuses =
-    Object.entries(grouped)
-      .sort(
-        (a, b) =>
-          b[1].length -
-          a[1].length
-      );
-
-
-  campusList.innerHTML = "";
-
-
-  if (!campuses.length) {
-
-    campusList.innerHTML =
-      `<div class="empty-state">
-        ไม่มีข้อมูล
-      </div>`;
-
-    return;
-  }
-
-
-  campuses.forEach(
-    ([campus, campusRows]) => {
-
-      const facultyCount =
-        uniqueValues(
-          campusRows,
-          "faculty"
-        ).length;
-
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-      item.className =
-        "campus-item";
-
-
-      item.innerHTML = `
-        <div class="campus-main">
-
-          <div>
-
-            <strong>
-              ${escapeHtml(campus)}
-            </strong>
-
-            <span>
-              ${campusRows.length} คน
-              · ${facultyCount} คณะ
-            </span>
+            <h3>
+              ผู้ส่งผลงานแยกตามวิทยาเขต / วิทยาลัย
+            </h3>
 
           </div>
 
-        </div>
-
-        <div class="campus-actions">
-
-          <button
-            class="small-button campus-list-button"
-            data-campus="${escapeAttribute(campus)}"
-          >
-            ดูรายชื่อ
-          </button>
-
-          <button
-            class="small-button secondary campus-detail-button"
-            data-campus="${escapeAttribute(campus)}"
-          >
-            รายละเอียด
-          </button>
+          <div
+            id="campusList"
+            class="campus-list"
+          ></div>
 
         </div>
-      `;
 
 
-      campusList.appendChild(
-        item
-      );
-    }
-  );
+        <!-- SUBMISSION -->
 
+        <div class="panel submissions-panel">
 
-  document
-    .querySelectorAll(
-      ".campus-list-button"
-    )
-    .forEach(button => {
+          <div class="panel-header submissions-header">
 
-      button.addEventListener(
-        "click",
-        () => {
+            <div>
 
-          filterCampus.value =
-            button.dataset.campus;
+              <div class="panel-kicker">
+                SUBMISSIONS
+              </div>
 
-          renderSubmissions();
+              <h3 id="submissionTitle">
+                รายชื่อผู้ส่งผลงานทั้งหมด
+              </h3>
 
-          document
-            .querySelector(
-              ".submissions-panel"
-            )
-            .scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
-
-        }
-      );
-
-    });
-
-
-  document
-    .querySelectorAll(
-      ".campus-detail-button"
-    )
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          showCampusDetail(
-            button.dataset.campus
-          );
-
-        }
-      );
-
-    });
-}
-
-
-// ======================================================
-// FILTERING
-// ======================================================
-
-function getFilteredRows() {
-
-  let rows =
-    getProjectRows();
-
-
-  const year =
-    filterYear.value;
-
-  const campus =
-    filterCampus.value;
-
-  const faculty =
-    filterFaculty.value;
-
-  const search =
-    searchInput
-      .value
-      .trim()
-      .toLowerCase();
-
-
-  if (year) {
-    rows =
-      rows.filter(
-        row =>
-          row.year_level === year
-      );
-  }
-
-
-  if (campus) {
-    rows =
-      rows.filter(
-        row =>
-          row.campus === campus
-      );
-  }
-
-
-  if (faculty) {
-    rows =
-      rows.filter(
-        row =>
-          row.faculty === faculty
-      );
-  }
-
-
-  if (search) {
-
-    rows =
-      rows.filter(row => {
-
-        const text = [
-          row.name,
-          row.student_id,
-          row.campus,
-          row.faculty,
-          row.program
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return text.includes(
-          search
-        );
-
-      });
-  }
-
-
-  /*
-    status filter จะเริ่มทำงาน
-    ใน Step ถัดไป หลังเชื่อม review_status
-  */
-
-
-  return rows;
-}
-
-
-// ======================================================
-// SUBMISSIONS
-// ======================================================
-
-function renderSubmissions() {
-
-  const rows =
-    getFilteredRows();
-
-
-  resultCount.textContent =
-    `${rows.length} รายการ`;
-
-
-  if (
-    currentProject ===
-    "campus-pride"
-  ) {
-
-    submissionTitle.textContent =
-      "My University, My Campus, My Pride";
-
-  } else if (
-    currentProject ===
-    "my-life-mbu"
-  ) {
-
-    submissionTitle.textContent =
-      "My Life at MBU";
-
-  } else {
-
-    submissionTitle.textContent =
-      "รายชื่อผู้ส่งผลงานทั้งหมด";
-
-  }
-
-
-  submissionTableBody.innerHTML =
-    "";
-
-  submissionCards.innerHTML =
-    "";
-
-
-  rows.forEach(row => {
-
-    const duplicate =
-      row.duplicate_count || 1;
-
-
-    const tr =
-      document.createElement(
-        "tr"
-      );
-
-
-    tr.innerHTML = `
-      <td>
-        <strong>
-          ${escapeHtml(row.name || "-")}
-        </strong>
-      </td>
-
-      <td>
-        ${escapeHtml(row.student_id || "-")}
-      </td>
-
-      <td>
-        ${escapeHtml(row.campus || "-")}
-      </td>
-
-      <td>
-        ${escapeHtml(row.faculty || "-")}
-      </td>
-
-      <td>
-        ${escapeHtml(row.year_level || "-")}
-      </td>
-
-      <td>
-        ${
-          duplicate > 1
-            ? `<span class="duplicate-badge">
-                 ${duplicate} ครั้ง
-               </span>`
-            : "-"
-        }
-      </td>
-
-      <td>
-        ${
-          row.video_url
-            ? `
-              <a
-                class="video-link"
-                href="${escapeAttribute(row.video_url)}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ดูผลงาน
-              </a>
-            `
-            : "-"
-        }
-      </td>
-    `;
-
-
-    submissionTableBody.appendChild(
-      tr
-    );
-
-
-    const card =
-      document.createElement(
-        "div"
-      );
-
-    card.className =
-      "submission-card";
-
-
-    card.innerHTML = `
-      <div class="submission-card-name">
-        ${escapeHtml(row.name || "-")}
-      </div>
-
-      <div class="submission-card-id">
-        ${escapeHtml(row.student_id || "-")}
-      </div>
-
-      <div class="submission-card-meta">
-        ${escapeHtml(row.campus || "-")}
-      </div>
-
-      <div class="submission-card-meta">
-        ${escapeHtml(row.faculty || "-")}
-        ·
-        ${escapeHtml(row.year_level || "-")}
-      </div>
-
-      ${
-        duplicate > 1
-          ? `
-            <div class="duplicate-badge mobile">
-              ส่ง ${duplicate} ครั้ง
             </div>
-          `
-          : ""
-      }
 
-      ${
-        row.video_url
-          ? `
-            <a
-              class="video-link mobile-video-button"
-              href="${escapeAttribute(row.video_url)}"
-              target="_blank"
-              rel="noopener noreferrer"
+            <div
+              id="resultCount"
+              class="result-count"
             >
-              ดูผลงาน
-            </a>
-          `
-          : ""
-      }
-    `;
+              0 รายการ
+            </div>
+
+          </div>
 
 
-    submissionCards.appendChild(
-      card
-    );
-  });
+          <!-- FILTER -->
+
+          <div class="filter-bar">
+
+            <select id="filterYear">
+              <option value="">
+                ทุกชั้นปี
+              </option>
+            </select>
+
+            <select id="filterCampus">
+              <option value="">
+                ทุกวิทยาเขต
+              </option>
+            </select>
+
+            <select id="filterFaculty">
+              <option value="">
+                ทุกคณะ
+              </option>
+            </select>
+
+            <select id="filterStatus">
+
+              <option value="">
+                ทุกสถานะ
+              </option>
+
+              <option value="unwatched">
+                ยังไม่ดู
+              </option>
+
+              <option value="watched">
+                ดูแล้ว
+              </option>
+
+              <option value="problem">
+                มีปัญหา
+              </option>
+
+            </select>
+
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="ค้นหาชื่อ / รหัสนักศึกษา..."
+            >
+
+            <button
+              id="clearFilters"
+              class="secondary-button"
+            >
+              ล้างตัวกรอง
+            </button>
+
+          </div>
 
 
-  if (!rows.length) {
+          <!-- BULK -->
 
-    submissionTableBody.innerHTML = `
-      <tr>
-        <td
-          colspan="7"
-          class="empty-table"
+          <div class="bulk-toolbar">
+
+            <div>
+              เลือกแล้ว
+              <strong id="selectedCount">
+                0
+              </strong>
+              รายการ
+            </div>
+
+            <button
+              id="exportSelectedButton"
+              class="export-button"
+              disabled
+            >
+              Export รายการที่เลือก
+            </button>
+
+          </div>
+
+
+          <!-- TABLE -->
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th class="checkbox-column">
+                    <input
+                      id="selectAllVisible"
+                      type="checkbox"
+                    >
+                  </th>
+
+                  <th>ชื่อ</th>
+
+                  <th>รหัสนักศึกษา</th>
+
+                  <th>วิทยาเขต</th>
+
+                  <th>คณะ</th>
+
+                  <th>ชั้นปี</th>
+
+                  <th>สถานะ</th>
+
+                  <th>ผลงาน</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody
+                id="submissionTableBody"
+              ></tbody>
+
+            </table>
+
+          </div>
+
+
+          <!-- MOBILE -->
+
+          <div
+            id="submissionCards"
+            class="submission-cards"
+          ></div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </section>
+
+
+  <!-- =========================
+       CAMPUS DETAIL MODAL
+  ========================== -->
+
+  <div
+    id="campusModal"
+    class="modal hidden"
+  >
+
+    <div
+      class="modal-backdrop"
+      data-close-campus-modal="true"
+    ></div>
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <div>
+
+          <div class="panel-kicker">
+            CAMPUS DETAIL
+          </div>
+
+          <h3 id="campusModalTitle">
+            รายละเอียดวิทยาเขต
+          </h3>
+
+        </div>
+
+        <button
+          id="closeCampusModal"
+          class="icon-button"
         >
-          ไม่พบข้อมูลตามตัวกรอง
-        </td>
-      </tr>
-    `;
+          ×
+        </button>
 
-    submissionCards.innerHTML = `
-      <div class="empty-state">
-        ไม่พบข้อมูลตามตัวกรอง
-      </div>
-    `;
-  }
-}
-
-
-// ======================================================
-// CAMPUS DETAIL
-// ======================================================
-
-function showCampusDetail(
-  campus
-) {
-
-  const rows =
-    getProjectRows()
-      .filter(
-        row =>
-          row.campus === campus
-      );
-
-
-  const facultyMap = {};
-
-
-  rows.forEach(row => {
-
-    const faculty =
-      row.faculty ||
-      "ไม่ระบุ";
-
-    facultyMap[faculty] =
-      (facultyMap[faculty] || 0) + 1;
-
-  });
-
-
-  const yearMap = {};
-
-
-  rows.forEach(row => {
-
-    const year =
-      row.year_level ||
-      "ไม่ระบุ";
-
-    yearMap[year] =
-      (yearMap[year] || 0) + 1;
-
-  });
-
-
-  campusModalTitle.textContent =
-    campus;
-
-
-  const faculties =
-    Object.entries(facultyMap)
-      .sort(
-        (a, b) =>
-          b[1] - a[1]
-      );
-
-
-  const years =
-    Object.entries(yearMap)
-      .sort();
-
-
-  campusModalContent.innerHTML = `
-
-    <div class="modal-stat-grid">
-
-      <div class="modal-stat">
-        <span>ผู้ส่งทั้งหมด</span>
-        <strong>${rows.length}</strong>
       </div>
 
-      <div class="modal-stat">
-        <span>จำนวนคณะ</span>
-        <strong>${faculties.length}</strong>
-      </div>
-
-      <div class="modal-stat">
-        <span>จำนวนชั้นปี</span>
-        <strong>${years.length}</strong>
-      </div>
+      <div
+        id="campusModalContent"
+        class="modal-content"
+      ></div>
 
     </div>
 
+  </div>
 
-    <div class="modal-section">
 
-      <h4>
-        แยกตามคณะ
-      </h4>
+  <!-- =========================
+       REVIEW MODAL
+  ========================== -->
 
-      ${faculties
-        .map(
-          ([faculty, count]) => `
-            <div class="detail-row">
-              <span>
-                ${escapeHtml(faculty)}
-              </span>
+  <div
+    id="reviewModal"
+    class="modal hidden"
+  >
 
-              <strong>
-                ${count} คน
-              </strong>
+    <div
+      class="modal-backdrop"
+      data-close-review-modal="true"
+    ></div>
+
+    <div class="review-modal-card">
+
+      <div class="modal-header">
+
+        <div>
+
+          <div class="panel-kicker">
+            VIDEO REVIEW
+          </div>
+
+          <h3 id="reviewModalName">
+            ผลงาน
+          </h3>
+
+          <div
+            id="reviewModalMeta"
+            class="review-modal-meta"
+          ></div>
+
+        </div>
+
+        <button
+          id="closeReviewModal"
+          class="icon-button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="review-layout">
+
+        <!-- VIDEO -->
+
+        <div class="video-area">
+
+          <iframe
+            id="videoFrame"
+            title="Video submission"
+            allow="autoplay; fullscreen"
+            allowfullscreen
+          ></iframe>
+
+          <a
+            id="openOriginalVideo"
+            class="secondary-button original-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            เปิดลิงก์ต้นฉบับ
+          </a>
+
+        </div>
+
+
+        <!-- REVIEW -->
+
+        <div class="review-sidebar">
+
+          <div class="review-status-box">
+
+            <div class="status-label">
+              สถานะการตรวจ
             </div>
-          `
-        )
-        .join("")
-      }
+
+            <div
+              id="currentReviewStatus"
+            ></div>
+
+          </div>
+
+
+          <label class="problem-check">
+
+            <input
+              id="hasProblem"
+              type="checkbox"
+            >
+
+            ผลงานนี้มีปัญหา
+
+          </label>
+
+
+          <label>
+            ประเภทปัญหา
+          </label>
+
+          <select id="problemType">
+
+            <option value="">
+              เลือกประเภทปัญหา
+            </option>
+
+            <option value="เปิดลิงก์ไม่ได้">
+              เปิดลิงก์ไม่ได้
+            </option>
+
+            <option value="ไม่มีสิทธิ์เข้าถึง">
+              ไม่มีสิทธิ์เข้าถึง
+            </option>
+
+            <option value="ส่งไฟล์ผิด">
+              ส่งไฟล์ผิด
+            </option>
+
+            <option value="ข้อมูลไม่ครบ">
+              ข้อมูลไม่ครบ
+            </option>
+
+            <option value="ไฟล์มีปัญหา">
+              ไฟล์มีปัญหา
+            </option>
+
+            <option value="อื่นๆ">
+              อื่นๆ
+            </option>
+
+          </select>
+
+
+          <label>
+            หมายเหตุ
+          </label>
+
+          <textarea
+            id="reviewNote"
+            rows="6"
+            placeholder="ระบุรายละเอียดสำหรับใช้ประสานงาน..."
+          ></textarea>
+
+
+          <button
+            id="saveReviewButton"
+            class="primary-button full-width"
+          >
+            บันทึก
+          </button>
+
+          <div
+            id="reviewSaveMessage"
+            class="save-message"
+          ></div>
+
+        </div>
+
+      </div>
 
     </div>
 
-
-    <div class="modal-section">
-
-      <h4>
-        แยกตามชั้นปี
-      </h4>
-
-      ${years
-        .map(
-          ([year, count]) => `
-            <div class="detail-row">
-              <span>
-                ${escapeHtml(year)}
-              </span>
-
-              <strong>
-                ${count} คน
-              </strong>
-            </div>
-          `
-        )
-        .join("")
-      }
-
-    </div>
+  </div>
 
 
-    <button
-      id="modalViewCampusList"
-      class="primary-button full-width"
-    >
-      ดูรายชื่อในวิทยาเขตนี้
-    </button>
-  `;
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <script src="config.js?v=20260926-2"></script>
+  <script src="app.js?v=20260926-2"></script>
 
-  campusModal.classList.remove(
-    "hidden"
-  );
-
-
-  document
-    .getElementById(
-      "modalViewCampusList"
-    )
-    .addEventListener(
-      "click",
-      () => {
-
-        filterCampus.value =
-          campus;
-
-        campusModal.classList.add(
-          "hidden"
-        );
-
-        renderSubmissions();
-
-        document
-          .querySelector(
-            ".submissions-panel"
-          )
-          .scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-
-      }
-    );
-}
-
-
-// ======================================================
-// FILTER EVENTS
-// ======================================================
-
-[
-  filterYear,
-  filterCampus,
-  filterFaculty,
-  filterStatus
-].forEach(element => {
-
-  element.addEventListener(
-    "change",
-    renderSubmissions
-  );
-
-});
-
-
-searchInput.addEventListener(
-  "input",
-  renderSubmissions
-);
-
-
-clearFilters.addEventListener(
-  "click",
-  () => {
-
-    resetFilters();
-
-    renderSubmissions();
-  }
-);
-
-
-function resetFilters() {
-
-  filterYear.value = "";
-  filterCampus.value = "";
-  filterFaculty.value = "";
-  filterStatus.value = "";
-  searchInput.value = "";
-}
-
-
-// ======================================================
-// MODAL
-// ======================================================
-
-closeCampusModal.addEventListener(
-  "click",
-  () =>
-    campusModal.classList.add(
-      "hidden"
-    )
-);
-
-
-campusModal.addEventListener(
-  "click",
-  event => {
-
-    if (
-      event.target.dataset
-        .closeModal === "true"
-    ) {
-
-      campusModal.classList.add(
-        "hidden"
-      );
-    }
-
-  }
-);
-
-
-// ======================================================
-// HELPERS
-// ======================================================
-
-function escapeHtml(value) {
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
-function escapeAttribute(value) {
-  return escapeHtml(value);
-}
-
-
-// ======================================================
-// SHOW DASHBOARD
-// ======================================================
-
-async function showDashboard(
-  user
-) {
-
-  loginPage.classList.add(
-    "hidden"
-  );
-
-  dashboardPage.classList.remove(
-    "hidden"
-  );
-
-  userEmail.textContent =
-    user.email || "";
-
-  await loadSubmissions();
-}
-
-
-// ======================================================
-// INITIALIZE
-// ======================================================
-
-async function initializeApp() {
-
-  const {
-    data: {
-      session
-    }
-  } =
-    await client.auth.getSession();
-
-
-  if (
-    session &&
-    session.user
-  ) {
-
-    await showDashboard(
-      session.user
-    );
-
-  } else {
-
-    dashboardPage.classList.add(
-      "hidden"
-    );
-
-    loginPage.classList.remove(
-      "hidden"
-    );
-  }
-}
-
-
-initializeApp();
+</body>
+</html>
