@@ -573,6 +573,90 @@
 
   </div>
 
+  <!-- ==================================================
+     VIDEO REVIEW MODAL
+=================================================== -->
+
+<div
+  id="reviewModal"
+  class="modal hidden"
+>
+
+  <div
+    id="reviewModalBackdrop"
+    class="modal-backdrop"
+  ></div>
+
+  <div class="review-modal-card">
+
+    <div class="modal-header">
+
+      <div>
+
+        <div class="panel-eyebrow">
+          VIDEO REVIEW
+        </div>
+
+        <h2 id="reviewModalName">
+          ผลงาน
+        </h2>
+
+        <div
+          id="reviewModalMeta"
+          class="review-modal-meta"
+        ></div>
+
+      </div>
+
+      <button
+        id="closeReviewModal"
+        type="button"
+        class="modal-close"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="review-video-area">
+
+      <iframe
+        id="reviewVideoFrame"
+        title="Video submission"
+        allow="autoplay; fullscreen"
+        allowfullscreen
+      ></iframe>
+
+      <div class="review-footer">
+
+        <div>
+
+          <div class="review-status-label">
+            สถานะ
+          </div>
+
+          <div id="reviewCurrentStatus"></div>
+
+        </div>
+
+        <a
+          id="reviewOriginalLink"
+          class="outline-button"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          เปิดลิงก์ต้นฉบับ
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
 
 
   <!-- ==================================================
