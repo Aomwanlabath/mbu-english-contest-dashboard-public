@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>MBU English Contest Dashboard</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+
+  <!-- =========================
+       LOGIN
+  ========================== -->
+
+  <section id="loginPage" class="login-page">
+
+    <div class="login-card">
+
+      <div class="logo-circle">
+        MBU
+      </div>
+
+      <h1>
+        English Contest Dashboard
+      </h1>
+
+      <p class="login-description">
+        ระบบติดตามผลงานโครงการประกวดคลิปภาษาอังกฤษ
+      </p>
+
+      <form id="loginForm">
+
+        <label>
+          Email
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          placeholder="name@example.com"
+          autocomplete="email"
+          required
+        >
+
+        <label>
+          Password
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        >
+
+        <button
+          type="submit"
+          id="loginButton"
+        >
+          เข้าสู่ระบบ
+        </button>
+
+        <div
+          id="loginError"
+          class="error-message"
+        ></div>
+
+      </form>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       DASHBOARD
+  ========================== -->
+
+  <section
+    id="dashboardPage"
+    class="dashboard-page hidden"
+  >
+
+    <header class="topbar">
+
+      <div>
+
+        <div class="eyebrow">
+          MBU ENGLISH CONTEST
+        </div>
+
+        <h2>
+          Executive Dashboard
+        </h2>
+
+      </div>
+
+      <div class="topbar-right">
+
+        <span id="userEmail"></span>
+
+        <button
+          id="logoutButton"
+          class="secondary-button"
+        >
+          ออกจากระบบ
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <main>
+
+      <div class="welcome-card">
+
+        <div>
+
+          <div class="status-dot"></div>
+
+          <span>
+            เชื่อมต่อฐานข้อมูลสำเร็จ
+          </span>
+
+        </div>
+
+        <strong id="recordCount">
+          กำลังโหลดข้อมูล...
+        </strong>
+
+      </div>
+
+
+      <div class="project-grid">
+
+        <div class="project-card">
+
+          <div class="project-number">
+            Project 01
+          </div>
+
+          <h3>
+            My University,<br>
+            My Campus, My Pride
+          </h3>
+
+          <div
+            id="project1Count"
+            class="big-number"
+          >
+            -
+          </div>
+
+          <span>
+            ผู้ส่งผลงานไม่ซ้ำ
+          </span>
+
+        </div>
+
+
+        <div class="project-card">
+
+          <div class="project-number">
+            Project 02
+          </div>
+
+          <h3>
+            My Life at MBU
+          </h3>
+
+          <div
+            id="project2Count"
+            class="big-number"
+          >
+            -
+          </div>
+
+          <span>
+            ผู้ส่งผลงานไม่ซ้ำ
+          </span>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </section>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
