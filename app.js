@@ -2155,7 +2155,7 @@ async function markAsWatched(
           onConflict:
             "submission_id,user_id"
         }
-      )
+      
       );
 
 
