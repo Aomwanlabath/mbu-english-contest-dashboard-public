@@ -165,6 +165,8 @@ let currentProject =
 let selectedIds =
   new Set();
 
+let currentUserId =
+  null;
 
 // ============================================================
 // LOGIN
@@ -264,6 +266,9 @@ logoutButton.addEventListener(
 
     selectedIds.clear();
 
+    currentUserId =
+      null;
+
 
     dashboardPage.classList.add(
       "hidden"
@@ -325,9 +330,14 @@ async function loadDashboardData() {
         .from("review_status")
         .select(`
           submission_id,
+          user_id,
           watched,
           watched_at
         `)
+        .eq(
+          "user_id",
+          currentUserId
+        )
 
     ]);
 
@@ -2124,24 +2134,28 @@ async function markAsWatched(
       )
       .upsert(
         {
-
+      
           submission_id:
             row.id,
-
+      
+          user_id:
+            currentUserId,
+      
           watched:
             true,
-
+      
           watched_at:
             now,
-
+      
           updated_at:
             now
-
+      
         },
         {
           onConflict:
-            "submission_id"
+            "submission_id,user_id"
         }
+      )
       );
 
 
@@ -2707,6 +2721,9 @@ function escapeAttribute(value) {
 async function showDashboard(
   user
 ) {
+
+ currentUserId =
+ user.id;
 
   loginPage.classList.add(
     "hidden"
