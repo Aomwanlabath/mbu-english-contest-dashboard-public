@@ -1416,3 +1416,449 @@ button {
   }
 
 }
+
+/* =========================================================
+   MBU ORANGE THEME
+   Visual override only — no layout / functionality changes
+========================================================= */
+
+:root {
+  --mbu-orange-dark: #9a3f12;
+  --mbu-orange: #c75a18;
+  --mbu-orange-main: #d96b1c;
+  --mbu-orange-light: #f39a45;
+  --mbu-gold: #e9a23b;
+
+  --mbu-cream: #fffaf4;
+  --mbu-soft: #fff4e8;
+  --mbu-border: #f0ddca;
+
+  --mbu-text: #3e2b22;
+  --mbu-muted: #856f63;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+body {
+  background: #f8f5f1;
+  color: var(--mbu-text);
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.login-page {
+  background:
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(255, 190, 105, 0.42),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #6f2b0d,
+      #b94c13 55%,
+      #e5822d
+    );
+}
+
+
+.brand-mark {
+  background:
+    linear-gradient(
+      135deg,
+      #a84010,
+      #e17a27
+    );
+
+  color: #ffffff;
+}
+
+
+.login-eyebrow {
+  color: var(--mbu-orange);
+}
+
+
+.login-card h1 {
+  color: #48291a;
+}
+
+
+.form-group input:focus {
+  border-color: var(--mbu-orange);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(217, 107, 28, 0.12);
+}
+
+
+.primary-button,
+.login-button {
+  background:
+    linear-gradient(
+      135deg,
+      #b94c13,
+      #df7625
+    );
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.topbar {
+  border-bottom-color: var(--mbu-border);
+}
+
+
+.header-eyebrow,
+.panel-eyebrow {
+  color: var(--mbu-orange);
+}
+
+
+.topbar h1 {
+  color: #42291d;
+}
+
+
+/* =========================================================
+   PROJECT TABS
+========================================================= */
+
+.project-tab {
+  border-color: #ead9ca;
+
+  color: #745b4d;
+}
+
+
+.project-tab:hover {
+  border-color: #e3aa7a;
+
+  background: #fff8f1;
+}
+
+
+.project-tab.active {
+  border-color: var(--mbu-orange);
+
+  background:
+    linear-gradient(
+      135deg,
+      #b84b13,
+      #df7625
+    );
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   KPI
+========================================================= */
+
+.kpi-card {
+  border-color: #eadfd5;
+}
+
+
+.kpi-number {
+  color: var(--mbu-orange-dark);
+}
+
+
+/* ดูแล้ว — ยังเก็บสีเขียวไว้
+   เพราะเป็น status ที่เข้าใจง่าย */
+
+.kpi-green .kpi-number {
+  color: #3d8062;
+}
+
+
+/* ยังไม่ดู */
+
+.kpi-orange .kpi-number {
+  color: #d66a18;
+}
+
+
+/* ส่งซ้ำ */
+
+.kpi-purple .kpi-number {
+  color: #a85a35;
+}
+
+
+/* =========================================================
+   PANELS
+========================================================= */
+
+.panel {
+  border-color: #eadfd5;
+}
+
+
+.panel-header {
+  border-bottom-color: #f0e5dc;
+}
+
+
+.panel-header h2 {
+  color: #452c20;
+}
+
+
+/* =========================================================
+   CAMPUS
+========================================================= */
+
+.campus-item {
+  border-bottom-color: #f1e6dc;
+}
+
+
+.campus-name {
+  color: #4b3022;
+}
+
+
+.mini-button {
+  background:
+    linear-gradient(
+      135deg,
+      #c55517,
+      #df7625
+    );
+}
+
+
+.mini-button.secondary {
+  background: #fff0e2;
+
+  color: #a74615;
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.filter-area {
+  background: #fdfaf7;
+
+  border-bottom-color: #f0e4da;
+}
+
+
+.filter-area select,
+.filter-area input {
+  border-color: #e8d8ca;
+
+  color: #5d473b;
+}
+
+
+.filter-area select:focus,
+.filter-area input:focus {
+  border-color: var(--mbu-orange);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(217, 107, 28, 0.09);
+}
+
+
+/* =========================================================
+   SELECTION / EXPORT
+========================================================= */
+
+.selection-toolbar {
+  background: #fff8f1;
+
+  border-bottom-color: #f0e2d6;
+}
+
+
+.selection-count strong {
+  color: var(--mbu-orange-dark);
+}
+
+
+.export-button {
+  background:
+    linear-gradient(
+      135deg,
+      #ad4511,
+      #db7021
+    );
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.submission-table thead {
+  background: #fff8f1;
+}
+
+
+.submission-table th {
+  color: #795f50;
+
+  border-bottom-color: #eadbcf;
+}
+
+
+.submission-table td {
+  border-bottom-color: #f1e8e0;
+}
+
+
+.submission-table tbody tr:hover {
+  background: #fffaf5;
+}
+
+
+.submission-name {
+  color: #4a3024;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-badge.unwatched {
+  background: #fff0da;
+
+  color: #a45a0a;
+}
+
+
+/* ดูแล้วใช้เขียวอ่อนเหมือนเดิม
+   เพื่อแยกสถานะออกจาก theme */
+
+.status-badge.watched {
+  background: #e9f6ef;
+
+  color: #337455;
+}
+
+
+/* =========================================================
+   VIDEO BUTTON
+========================================================= */
+
+.video-button {
+  background:
+    linear-gradient(
+      135deg,
+      #bc4d13,
+      #df7726
+    );
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+.modal-header {
+  border-bottom-color: #efe1d5;
+}
+
+
+.modal-header h2 {
+  color: #472d20;
+}
+
+
+.modal-close {
+  background: #fff0e3;
+
+  color: #a74a18;
+}
+
+
+.modal-stat {
+  background: #fff7ef;
+}
+
+
+.modal-stat-value {
+  color: var(--mbu-orange-dark);
+}
+
+
+/* =========================================================
+   VIDEO REVIEW
+========================================================= */
+
+.review-video-area {
+  background:
+    linear-gradient(
+      145deg,
+      #2c1b14,
+      #4b2817
+    );
+}
+
+
+/* =========================================================
+   GENERIC BUTTON
+========================================================= */
+
+.outline-button {
+  border-color: #e4cdbb;
+
+  color: #8f451d;
+
+  background: #ffffff;
+}
+
+
+.outline-button:hover {
+  border-color: #d98b55;
+
+  background: #fff7ef;
+}
+
+
+/* =========================================================
+   CHECKBOX ACCENT
+========================================================= */
+
+input[type="checkbox"] {
+  accent-color: var(--mbu-orange);
+}
+
+
+/* =========================================================
+   SCROLLBAR — OPTIONAL
+========================================================= */
+
+.campus-list::-webkit-scrollbar,
+.table-container::-webkit-scrollbar,
+.review-modal-card::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+
+.campus-list::-webkit-scrollbar-thumb,
+.table-container::-webkit-scrollbar-thumb,
+.review-modal-card::-webkit-scrollbar-thumb {
+  background: #dfb18e;
+
+  border-radius: 99px;
+}
