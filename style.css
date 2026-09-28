@@ -1862,3 +1862,35 @@ input[type="checkbox"] {
 
   border-radius: 99px;
 }
+
+/* =========================================================
+   SUBMITTED DATE / TIME
+========================================================= */
+
+.submitted-date {
+  color: #4f372b;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.submitted-time {
+  margin-top: 2px;
+
+  color: #9a7b69;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.mobile-submitted {
+  margin-top: 6px;
+
+  color: #8b7061;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.mobile-submitted strong {
+  color: #5b4032;
+  font-weight: 700;
+}
