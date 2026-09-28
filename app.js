@@ -1280,7 +1280,7 @@ function renderSubmissions() {
       `
       <tr>
         <td
-          colspan="8"
+          colspan="9"
           class="empty-table"
         >
           ไม่พบข้อมูล
@@ -1390,7 +1390,11 @@ function renderDesktopRow(row) {
       row.id
     );
 
-
+  const submitted =
+    formatSubmittedAt(
+      row.submitted_at
+    );
+  
   tr.innerHTML =
     `
     <td>
@@ -1430,6 +1434,28 @@ function renderDesktopRow(row) {
       ${escapeHtml(
         row.student_id || "-"
       )}
+    </td>
+
+    <td>
+
+      <div class="submitted-date">
+        ${escapeHtml(
+          submitted.date
+        )}
+      </div>
+    
+      ${
+        submitted.time
+          ? `
+            <div class="submitted-time">
+              ${escapeHtml(
+                submitted.time
+              )}
+            </div>
+          `
+          : ""
+      }
+    
     </td>
 
 
@@ -1524,6 +1550,10 @@ function renderMobileCard(row) {
       row.id
     );
 
+  const submitted =
+    formatSubmittedAt(
+      row.submitted_at
+    );
 
   card.innerHTML =
     `
@@ -1552,6 +1582,25 @@ function renderMobileCard(row) {
       ${escapeHtml(
         row.student_id || "-"
       )}
+    </div>
+
+    <div class="mobile-submitted">
+    
+      ส่งเมื่อ
+      <strong>
+        ${escapeHtml(
+          submitted.date
+        )}
+      </strong>
+    
+      ${
+        submitted.time
+          ? ` · ${escapeHtml(
+              submitted.time
+            )}`
+          : ""
+      }
+    
     </div>
 
 
@@ -2712,6 +2761,76 @@ function escapeAttribute(value) {
 
 }
 
+// ============================================================
+// DATE / TIME FORMAT
+// ============================================================
+
+function formatSubmittedAt(value) {
+
+  if (!value) {
+    return {
+      date: "-",
+      time: ""
+    };
+  }
+
+  // รองรับรูปแบบจาก Google Form เช่น:
+  // 23/9/2026, 18:50:14
+
+  const match =
+    String(value).match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s+(\d{1,2}):(\d{2})(?::\d{2})?$/
+    );
+
+  if (!match) {
+    return {
+      date: value,
+      time: ""
+    };
+  }
+
+  const day =
+    Number(match[1]);
+
+  const month =
+    Number(match[2]);
+
+  const yearAD =
+    Number(match[3]);
+
+  const hour =
+    match[4].padStart(2, "0");
+
+  const minute =
+    match[5];
+
+  const monthsTH = [
+    "",
+    "ม.ค.",
+    "ก.พ.",
+    "มี.ค.",
+    "เม.ย.",
+    "พ.ค.",
+    "มิ.ย.",
+    "ก.ค.",
+    "ส.ค.",
+    "ก.ย.",
+    "ต.ค.",
+    "พ.ย.",
+    "ธ.ค."
+  ];
+
+  const yearBE =
+    yearAD + 543;
+
+  return {
+    date:
+      `${day} ${monthsTH[month]} ${yearBE}`,
+
+    time:
+      `${hour}:${minute} น.`
+  };
+}
 
 // ============================================================
 // SHOW DASHBOARD
