@@ -1931,3 +1931,51 @@ input[type="checkbox"] {
 
   color: #8a6d5e;
 }
+
+/* =========================================================
+   DRIVE FALLBACK - FIX DARK BACKGROUND
+========================================================= */
+
+.review-video-area .drive-fallback {
+  background: transparent;
+  color: #ffffff;
+}
+
+.review-video-area .drive-fallback h3 {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.review-video-area .drive-fallback p {
+  color: #f4d8c7;
+  opacity: 1;
+}
+
+.review-video-area .drive-fallback-icon {
+  opacity: 1;
+}
+
+.review-video-area .drive-fallback .primary-button {
+  background: #e86f16;
+  color: #ffffff;
+  border: none;
+}
+
+.review-video-area .drive-fallback .primary-button:hover {
+  background: #f07c25;
+  color: #ffffff;
+}
+
+.review-video-area .drive-fallback:not(.hidden) {
+  display: flex;
+
+  width: 100%;
+  min-height: 360px;
+
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  box-sizing: border-box;
+}
