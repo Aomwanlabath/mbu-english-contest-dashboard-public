@@ -152,6 +152,12 @@ const reviewOriginalLink =
 const closeReviewModal =
   byId("closeReviewModal");
 
+const driveFallback =
+  byId("driveFallback");
+
+const driveFallbackLink =
+  byId("driveFallbackLink");
+
 
 // ============================================================
 // STATE
@@ -2127,10 +2133,49 @@ async function openVideoModal(
       );
 
 
-  reviewVideoFrame.src =
-    convertToPreviewUrl(
+  const previewInfo =
+    getPreviewInfo(
       row.video_url
     );
+  
+  
+  reviewOriginalLink.href =
+    row.video_url || "#";
+  
+  
+  driveFallbackLink.href =
+    row.video_url || "#";
+  
+  
+  if (
+    previewInfo.type === "video"
+  ) {
+  
+    reviewVideoFrame.classList.remove(
+      "hidden"
+    );
+  
+    driveFallback.classList.add(
+      "hidden"
+    );
+  
+    reviewVideoFrame.src =
+      previewInfo.url;
+  
+  } else {
+  
+    reviewVideoFrame.src =
+      "";
+  
+    reviewVideoFrame.classList.add(
+      "hidden"
+    );
+  
+    driveFallback.classList.remove(
+      "hidden"
+    );
+  
+  }
 
 
   reviewOriginalLink.href =
@@ -2249,14 +2294,13 @@ async function markAsWatched(
 // DRIVE PREVIEW
 // ============================================================
 
-function convertToPreviewUrl(
-  url
-) {
+function getPreviewInfo(url) {
 
   if (!url) {
-
-    return "";
-
+    return {
+      type: "fallback",
+      url: ""
+    };
   }
 
 
@@ -2271,11 +2315,13 @@ function convertToPreviewUrl(
     match[1]
   ) {
 
-    return (
-      "https://drive.google.com/file/d/" +
-      match[1] +
-      "/preview"
-    );
+    return {
+      type: "video",
+      url:
+        "https://drive.google.com/file/d/" +
+        match[1] +
+        "/preview"
+    };
 
   }
 
@@ -2291,17 +2337,36 @@ function convertToPreviewUrl(
     match[1]
   ) {
 
-    return (
-      "https://drive.google.com/file/d/" +
-      match[1] +
-      "/preview"
-    );
+    return {
+      type: "video",
+      url:
+        "https://drive.google.com/file/d/" +
+        match[1] +
+        "/preview"
+    };
 
   }
 
 
-  return url;
+  // folder / shared drive / unsupported Drive URL
+  if (
+    url.includes(
+      "drive.google.com"
+    )
+  ) {
 
+    return {
+      type: "fallback",
+      url: url
+    };
+
+  }
+
+
+  return {
+    type: "fallback",
+    url: url
+  };
 }
 
 
