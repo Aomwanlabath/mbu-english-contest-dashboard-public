@@ -1894,3 +1894,40 @@ input[type="checkbox"] {
   color: #5b4032;
   font-weight: 700;
 }
+
+.drive-fallback {
+  min-height: 360px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 32px;
+
+  border-radius: 12px;
+
+  background: #fffaf4;
+
+  color: #5b4032;
+}
+
+.drive-fallback-icon {
+  font-size: 48px;
+
+  margin-bottom: 14px;
+}
+
+.drive-fallback h3 {
+  margin: 0 0 8px;
+
+  font-size: 18px;
+}
+
+.drive-fallback p {
+  margin: 0 0 18px;
+
+  color: #8a6d5e;
+}
