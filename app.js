@@ -159,6 +159,24 @@ const driveFallbackLink =
   byId("driveFallbackLink");
 
 
+// EXECUTIVE CHARTS
+
+const executiveSummaryText =
+  byId("executiveSummaryText");
+
+const campusChartBox =
+  byId("campusChartBox");
+
+const campusProjectChartCanvas =
+  byId("campusProjectChart");
+
+const projectShareChartCanvas =
+  byId("projectShareChart");
+
+const reviewProgressChartCanvas =
+  byId("reviewProgressChart");
+
+
 // ============================================================
 // STATE
 // ============================================================
@@ -172,6 +190,18 @@ let selectedIds =
   new Set();
 
 let currentUserId =
+  null;
+
+
+// Chart.js instances
+// Keep references so old charts can be destroyed before re-rendering.
+let campusProjectChart =
+  null;
+
+let projectShareChart =
+  null;
+
+let reviewProgressChart =
   null;
 
 // ============================================================
@@ -787,6 +817,13 @@ function renderDashboard() {
   );
 
 
+  // Executive charts always use all submissions so management
+  // can compare both contest categories in one overview.
+  renderExecutiveCharts(
+    allSubmissions
+  );
+
+
   renderCampusOverview(
     rows
   );
@@ -875,6 +912,708 @@ function renderKPIs(rows) {
 
   kpiDuplicate.textContent =
     duplicates;
+
+}
+
+
+// ============================================================
+// EXECUTIVE CHARTS
+// ============================================================
+
+function renderExecutiveCharts(rows) {
+
+  // Do not break the rest of the dashboard if Chart.js or
+  // the executive chart HTML has not been loaded yet.
+  if (
+    typeof Chart === "undefined"
+  ) {
+
+    console.warn(
+      "Chart.js is not loaded. Executive charts were skipped."
+    );
+
+    return;
+
+  }
+
+
+  renderExecutiveSummary(
+    rows
+  );
+
+  renderCampusProjectChart(
+    rows
+  );
+
+  renderProjectShareChart(
+    rows
+  );
+
+  renderReviewProgressChart(
+    rows
+  );
+
+}
+
+
+function renderExecutiveSummary(rows) {
+
+  if (
+    !executiveSummaryText
+  ) {
+
+    return;
+
+  }
+
+
+  const project1Count =
+    rows.filter(
+      function (row) {
+
+        return (
+          row.project_id ===
+          "campus-pride"
+        );
+
+      }
+    ).length;
+
+
+  const project2Count =
+    rows.filter(
+      function (row) {
+
+        return (
+          row.project_id ===
+          "my-life-mbu"
+        );
+
+      }
+    ).length;
+
+
+  const campusCount =
+    getUniqueValues(
+      rows,
+      "campus"
+    ).length;
+
+
+  const uniqueStudents =
+    new Set(
+      rows
+        .map(
+          function (row) {
+
+            return (
+              row.student_id ||
+              ""
+            );
+
+          }
+        )
+        .filter(Boolean)
+    ).size;
+
+
+  executiveSummaryText.textContent =
+    `มีผลงานทั้งหมด ${rows.length} ผลงาน ` +
+    `จากผู้เข้าแข่งขันประมาณ ${uniqueStudents} คน ` +
+    `ครอบคลุม ${campusCount} วิทยาเขต/วิทยาลัย ` +
+    `โดย Project 01 จำนวน ${project1Count} ผลงาน ` +
+    `และ Project 02 จำนวน ${project2Count} ผลงาน`;
+
+}
+
+
+function renderCampusProjectChart(rows) {
+
+  if (
+    !campusProjectChartCanvas
+  ) {
+
+    return;
+
+  }
+
+
+  const campusMap =
+    {};
+
+
+  rows.forEach(
+    function (row) {
+
+      const campus =
+        row.campus ||
+        "ไม่ระบุ";
+
+
+      if (
+        !campusMap[campus]
+      ) {
+
+        campusMap[campus] = {
+          campusPride: 0,
+          myLife: 0
+        };
+
+      }
+
+
+      if (
+        row.project_id ===
+        "campus-pride"
+      ) {
+
+        campusMap[campus]
+          .campusPride += 1;
+
+      }
+
+
+      if (
+        row.project_id ===
+        "my-life-mbu"
+      ) {
+
+        campusMap[campus]
+          .myLife += 1;
+
+      }
+
+    }
+  );
+
+
+  const campusRows =
+    Object.entries(
+      campusMap
+    )
+      .map(
+        function (entry) {
+
+          return {
+            campus: entry[0],
+            campusPride:
+              entry[1].campusPride,
+            myLife:
+              entry[1].myLife,
+            total:
+              entry[1].campusPride +
+              entry[1].myLife
+          };
+
+        }
+      )
+      .sort(
+        function (a, b) {
+
+          return (
+            b.total -
+            a.total
+          );
+
+        }
+      );
+
+
+  if (
+    campusChartBox
+  ) {
+
+    campusChartBox.style.height =
+      Math.max(
+        360,
+        campusRows.length * 52
+      ) +
+      "px";
+
+  }
+
+
+  if (
+    campusProjectChart
+  ) {
+
+    campusProjectChart
+      .destroy();
+
+  }
+
+
+  campusProjectChart =
+    new Chart(
+      campusProjectChartCanvas,
+      {
+
+        type:
+          "bar",
+
+        data: {
+
+          labels:
+            campusRows.map(
+              function (row) {
+
+                return row.campus;
+
+              }
+            ),
+
+          datasets: [
+
+            {
+              label:
+                "My University, My Campus, My Pride",
+
+              data:
+                campusRows.map(
+                  function (row) {
+
+                    return row.campusPride;
+
+                  }
+                ),
+
+              backgroundColor:
+                "#1d5fb8",
+
+              borderRadius:
+                5
+            },
+
+            {
+              label:
+                "My Life at MBU",
+
+              data:
+                campusRows.map(
+                  function (row) {
+
+                    return row.myLife;
+
+                  }
+                ),
+
+              backgroundColor:
+                "#e49a22",
+
+              borderRadius:
+                5
+            }
+
+          ]
+
+        },
+
+
+        options: {
+
+          indexAxis:
+            "y",
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+
+          plugins: {
+
+            legend: {
+              position:
+                "top"
+            },
+
+            tooltip: {
+
+              callbacks: {
+
+                footer:
+                  function (items) {
+
+                    const total =
+                      items.reduce(
+                        function (
+                          sum,
+                          item
+                        ) {
+
+                          return (
+                            sum +
+                            Number(
+                              item.raw ||
+                              0
+                            )
+                          );
+
+                        },
+                        0
+                      );
+
+
+                    return (
+                      "รวม " +
+                      total +
+                      " ผลงาน"
+                    );
+
+                  }
+
+              }
+
+            }
+
+          },
+
+          scales: {
+
+            x: {
+
+              beginAtZero:
+                true,
+
+              ticks: {
+                precision:
+                  0
+              },
+
+              title: {
+                display:
+                  true,
+                text:
+                  "จำนวนผลงาน"
+              }
+
+            },
+
+            y: {
+
+              ticks: {
+                autoSkip:
+                  false
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+}
+
+
+function renderProjectShareChart(rows) {
+
+  if (
+    !projectShareChartCanvas
+  ) {
+
+    return;
+
+  }
+
+
+  const project1 =
+    rows.filter(
+      function (row) {
+
+        return (
+          row.project_id ===
+          "campus-pride"
+        );
+
+      }
+    ).length;
+
+
+  const project2 =
+    rows.filter(
+      function (row) {
+
+        return (
+          row.project_id ===
+          "my-life-mbu"
+        );
+
+      }
+    ).length;
+
+
+  if (
+    projectShareChart
+  ) {
+
+    projectShareChart
+      .destroy();
+
+  }
+
+
+  projectShareChart =
+    new Chart(
+      projectShareChartCanvas,
+      {
+
+        type:
+          "doughnut",
+
+        data: {
+
+          labels: [
+            "My University, My Campus, My Pride",
+            "My Life at MBU"
+          ],
+
+          datasets: [
+
+            {
+              data: [
+                project1,
+                project2
+              ],
+
+              backgroundColor: [
+                "#1d5fb8",
+                "#e49a22"
+              ],
+
+              borderWidth:
+                0
+            }
+
+          ]
+
+        },
+
+
+        options: {
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+          cutout:
+            "65%",
+
+          plugins: {
+
+            legend: {
+              position:
+                "bottom"
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+}
+
+
+function renderReviewProgressChart(rows) {
+
+  if (
+    !reviewProgressChartCanvas
+  ) {
+
+    return;
+
+  }
+
+
+  const projects = [
+
+    {
+      id:
+        "campus-pride",
+      label:
+        "Project 01"
+    },
+
+    {
+      id:
+        "my-life-mbu",
+      label:
+        "Project 02"
+    }
+
+  ];
+
+
+  const watched =
+    [];
+
+  const unwatched =
+    [];
+
+
+  projects.forEach(
+    function (project) {
+
+      const projectRows =
+        rows.filter(
+          function (row) {
+
+            return (
+              row.project_id ===
+              project.id
+            );
+
+          }
+        );
+
+
+      const watchedCount =
+        projectRows.filter(
+          function (row) {
+
+            return (
+              getStatus(row) ===
+              "watched"
+            );
+
+          }
+        ).length;
+
+
+      watched.push(
+        watchedCount
+      );
+
+
+      unwatched.push(
+        projectRows.length -
+        watchedCount
+      );
+
+    }
+  );
+
+
+  if (
+    reviewProgressChart
+  ) {
+
+    reviewProgressChart
+      .destroy();
+
+  }
+
+
+  reviewProgressChart =
+    new Chart(
+      reviewProgressChartCanvas,
+      {
+
+        type:
+          "bar",
+
+        data: {
+
+          labels:
+            projects.map(
+              function (project) {
+
+                return project.label;
+
+              }
+            ),
+
+          datasets: [
+
+            {
+              label:
+                "ดูแล้ว",
+
+              data:
+                watched,
+
+              backgroundColor:
+                "#16865a",
+
+              borderRadius:
+                5
+            },
+
+            {
+              label:
+                "ยังไม่ดู",
+
+              data:
+                unwatched,
+
+              backgroundColor:
+                "#e0a23a",
+
+              borderRadius:
+                5
+            }
+
+          ]
+
+        },
+
+
+        options: {
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+          plugins: {
+
+            legend: {
+              position:
+                "bottom"
+            }
+
+          },
+
+          scales: {
+
+            x: {
+              stacked:
+                true
+            },
+
+            y: {
+
+              stacked:
+                true,
+
+              beginAtZero:
+                true,
+
+              ticks: {
+                precision:
+                  0
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
 
 }
 
