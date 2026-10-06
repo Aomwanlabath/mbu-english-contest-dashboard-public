@@ -1029,116 +1029,99 @@ function renderExecutiveSummary(rows) {
 
 function renderCampusProjectChart(rows) {
 
-  if (
-    !campusProjectChartCanvas
-  ) {
-
-    return;
-
-  }
+  const campusMap = {};
 
 
-  const campusMap =
-    {};
+  rows.forEach(function (row) {
+
+    const campus =
+      row.campus || "ไม่ระบุ";
 
 
-  rows.forEach(
-    function (row) {
+    if (!campusMap[campus]) {
 
-      const campus =
-        row.campus ||
-        "ไม่ระบุ";
-
-
-      if (
-        !campusMap[campus]
-      ) {
-
-        campusMap[campus] = {
-          campusPride: 0,
-          myLife: 0
-        };
-
-      }
-
-
-      if (
-        row.project_id ===
-        "campus-pride"
-      ) {
-
-        campusMap[campus]
-          .campusPride += 1;
-
-      }
-
-
-      if (
-        row.project_id ===
-        "my-life-mbu"
-      ) {
-
-        campusMap[campus]
-          .myLife += 1;
-
-      }
+      campusMap[campus] = {
+        campusPride: 0,
+        myLife: 0
+      };
 
     }
-  );
+
+
+    if (
+      row.project_id ===
+      "campus-pride"
+    ) {
+
+      campusMap[campus]
+        .campusPride += 1;
+
+    }
+
+
+    if (
+      row.project_id ===
+      "my-life-mbu"
+    ) {
+
+      campusMap[campus]
+        .myLife += 1;
+
+    }
+
+  });
 
 
   const campusRows =
-    Object.entries(
-      campusMap
-    )
-      .map(
-        function (entry) {
+    Object.entries(campusMap)
+      .map(function (entry) {
 
-          return {
-            campus: entry[0],
-            campusPride:
-              entry[1].campusPride,
-            myLife:
-              entry[1].myLife,
-            total:
-              entry[1].campusPride +
-              entry[1].myLife
-          };
+        return {
 
-        }
-      )
-      .sort(
-        function (a, b) {
+          campus:
+            entry[0],
 
-          return (
-            b.total -
-            a.total
-          );
+          campusPride:
+            entry[1].campusPride,
 
-        }
-      );
+          myLife:
+            entry[1].myLife,
+
+          total:
+            entry[1].campusPride +
+            entry[1].myLife
+
+        };
+
+      })
+      .sort(function (a, b) {
+
+        return b.total - a.total;
+
+      });
 
 
-  if (
-    campusChartBox
-  ) {
+  /*
+    จำนวนผลงานทั้งหมด
+    ใช้เป็นฐานคำนวณ %
+  */
 
-    campusChartBox.style.height =
-      Math.max(
-        360,
-        campusRows.length * 52
-      ) +
-      "px";
-
-  }
+  const totalSubmissions =
+    rows.length;
 
 
-  if (
-    campusProjectChart
-  ) {
+  /*
+    กราฟแนวตั้งไม่ต้องเพิ่มความสูง
+    ตามจำนวนวิทยาเขต
+  */
 
-    campusProjectChart
-      .destroy();
+  campusChartBox.style.height =
+    "460px";
+
+
+  if (campusProjectChart) {
+
+    campusProjectChart.destroy();
 
   }
 
@@ -1148,33 +1131,29 @@ function renderCampusProjectChart(rows) {
       campusProjectChartCanvas,
       {
 
-        type:
-          "bar",
+        type: "bar",
+
+        plugins: [
+          ChartDataLabels
+        ],
 
         data: {
 
           labels:
             campusRows.map(
-              function (row) {
-
-                return row.campus;
-
-              }
+              row => row.campus
             ),
 
           datasets: [
 
             {
+
               label:
                 "My University, My Campus, My Pride",
 
               data:
                 campusRows.map(
-                  function (row) {
-
-                    return row.campusPride;
-
-                  }
+                  row => row.campusPride
                 ),
 
               backgroundColor:
@@ -1182,19 +1161,17 @@ function renderCampusProjectChart(rows) {
 
               borderRadius:
                 5
+
             },
 
             {
+
               label:
                 "My Life at MBU",
 
               data:
                 campusRows.map(
-                  function (row) {
-
-                    return row.myLife;
-
-                  }
+                  row => row.myLife
                 ),
 
               backgroundColor:
@@ -1202,6 +1179,7 @@ function renderCampusProjectChart(rows) {
 
               borderRadius:
                 5
+
             }
 
           ]
@@ -1211,30 +1189,130 @@ function renderCampusProjectChart(rows) {
 
         options: {
 
-          indexAxis:
-            "y",
+          /*
+            ไม่ใช้ indexAxis: "y"
+            = กราฟแท่งแนวตั้ง
+          */
 
-          responsive:
-            true,
+          responsive: true,
 
-          maintainAspectRatio:
-            false,
+          maintainAspectRatio: false,
+
+          layout: {
+
+            padding: {
+              top: 30
+            }
+
+          },
+
 
           interaction: {
+
             mode: "index",
+
             intersect: false
+
           },
+
 
           plugins: {
 
             legend: {
-              position:
-                "top"
+
+              position: "top"
+
             },
+
+
+            datalabels: {
+
+              anchor: "end",
+
+              align: "top",
+
+              offset: 2,
+
+              color: "#17263d",
+
+              font: {
+
+                weight: "bold",
+
+                size: 11
+
+              },
+
+
+              formatter:
+                function (
+                  value
+                ) {
+
+                  if (!value) {
+
+                    return "";
+
+                  }
+
+
+                  const percent =
+                    totalSubmissions
+                      ? (
+                          value /
+                          totalSubmissions *
+                          100
+                        )
+                      : 0;
+
+
+                  return (
+                    value +
+                    " (" +
+                    percent.toFixed(1) +
+                    "%)"
+                  );
+
+                }
+
+            },
+
 
             tooltip: {
 
               callbacks: {
+
+                label:
+                  function (context) {
+
+                    const value =
+                      Number(
+                        context.raw ||
+                        0
+                      );
+
+
+                    const percent =
+                      totalSubmissions
+                        ? (
+                            value /
+                            totalSubmissions *
+                            100
+                          )
+                        : 0;
+
+
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      value +
+                      " ผลงาน (" +
+                      percent.toFixed(1) +
+                      "%)"
+                    );
+
+                  },
+
 
                 footer:
                   function (items) {
@@ -1260,7 +1338,7 @@ function renderCampusProjectChart(rows) {
 
 
                     return (
-                      "รวม " +
+                      "รวมวิทยาเขตนี้ " +
                       total +
                       " ผลงาน"
                     );
@@ -1273,32 +1351,40 @@ function renderCampusProjectChart(rows) {
 
           },
 
+
           scales: {
 
             x: {
 
-              beginAtZero:
-                true,
-
               ticks: {
-                precision:
-                  0
-              },
 
-              title: {
-                display:
-                  true,
-                text:
-                  "จำนวนผลงาน"
+                autoSkip: false,
+
+                maxRotation: 45,
+
+                minRotation: 0
+
               }
 
             },
 
+
             y: {
 
+              beginAtZero: true,
+
               ticks: {
-                autoSkip:
-                  false
+
+                precision: 0
+
+              },
+
+              title: {
+
+                display: true,
+
+                text: "จำนวนผลงาน"
+
               }
 
             }
@@ -1315,47 +1401,30 @@ function renderCampusProjectChart(rows) {
 
 function renderProjectShareChart(rows) {
 
-  if (
-    !projectShareChartCanvas
-  ) {
-
-    return;
-
-  }
-
-
   const project1 =
     rows.filter(
-      function (row) {
-
-        return (
-          row.project_id ===
-          "campus-pride"
-        );
-
-      }
+      row =>
+        row.project_id ===
+        "campus-pride"
     ).length;
 
 
   const project2 =
     rows.filter(
-      function (row) {
-
-        return (
-          row.project_id ===
-          "my-life-mbu"
-        );
-
-      }
+      row =>
+        row.project_id ===
+        "my-life-mbu"
     ).length;
 
 
-  if (
-    projectShareChart
-  ) {
+  const total =
+    project1 +
+    project2;
 
-    projectShareChart
-      .destroy();
+
+  if (projectShareChart) {
+
+    projectShareChart.destroy();
 
   }
 
@@ -1368,6 +1437,10 @@ function renderProjectShareChart(rows) {
         type:
           "doughnut",
 
+        plugins: [
+          ChartDataLabels
+        ],
+
         data: {
 
           labels: [
@@ -1378,6 +1451,7 @@ function renderProjectShareChart(rows) {
           datasets: [
 
             {
+
               data: [
                 project1,
                 project2
@@ -1390,6 +1464,7 @@ function renderProjectShareChart(rows) {
 
               borderWidth:
                 0
+
             }
 
           ]
@@ -1406,13 +1481,104 @@ function renderProjectShareChart(rows) {
             false,
 
           cutout:
-            "65%",
+            "58%",
+
 
           plugins: {
 
             legend: {
+
               position:
                 "bottom"
+
+            },
+
+
+            datalabels: {
+
+              color:
+                "#ffffff",
+
+              font: {
+
+                weight:
+                  "bold",
+
+                size:
+                  13
+
+              },
+
+
+              formatter:
+                function (value) {
+
+                  if (!value) {
+
+                    return "";
+
+                  }
+
+
+                  const percent =
+                    total
+                      ? (
+                          value /
+                          total *
+                          100
+                        )
+                      : 0;
+
+
+                  return (
+                    value +
+                    "\n" +
+                    percent.toFixed(1) +
+                    "%"
+                  );
+
+                }
+
+            },
+
+
+            tooltip: {
+
+              callbacks: {
+
+                label:
+                  function (context) {
+
+                    const value =
+                      Number(
+                        context.raw ||
+                        0
+                      );
+
+
+                    const percent =
+                      total
+                        ? (
+                            value /
+                            total *
+                            100
+                          )
+                        : 0;
+
+
+                    return (
+                      context.label +
+                      ": " +
+                      value +
+                      " ผลงาน (" +
+                      percent.toFixed(1) +
+                      "%)"
+                    );
+
+                  }
+
+              }
+
             }
 
           }
@@ -1427,20 +1593,12 @@ function renderProjectShareChart(rows) {
 
 function renderReviewProgressChart(rows) {
 
-  if (
-    !reviewProgressChartCanvas
-  ) {
-
-    return;
-
-  }
-
-
   const projects = [
 
     {
       id:
         "campus-pride",
+
       label:
         "Project 01"
     },
@@ -1448,6 +1606,7 @@ function renderReviewProgressChart(rows) {
     {
       id:
         "my-life-mbu",
+
       label:
         "Project 02"
     }
@@ -1455,11 +1614,11 @@ function renderReviewProgressChart(rows) {
   ];
 
 
-  const watched =
-    [];
+  const watched = [];
 
-  const unwatched =
-    [];
+  const unwatched = [];
+
+  const totals = [];
 
 
   projects.forEach(
@@ -1467,27 +1626,17 @@ function renderReviewProgressChart(rows) {
 
       const projectRows =
         rows.filter(
-          function (row) {
-
-            return (
-              row.project_id ===
-              project.id
-            );
-
-          }
+          row =>
+            row.project_id ===
+            project.id
         );
 
 
       const watchedCount =
         projectRows.filter(
-          function (row) {
-
-            return (
-              getStatus(row) ===
-              "watched"
-            );
-
-          }
+          row =>
+            getStatus(row) ===
+            "watched"
         ).length;
 
 
@@ -1501,16 +1650,18 @@ function renderReviewProgressChart(rows) {
         watchedCount
       );
 
+
+      totals.push(
+        projectRows.length
+      );
+
     }
   );
 
 
-  if (
-    reviewProgressChart
-  ) {
+  if (reviewProgressChart) {
 
-    reviewProgressChart
-      .destroy();
+    reviewProgressChart.destroy();
 
   }
 
@@ -1523,20 +1674,22 @@ function renderReviewProgressChart(rows) {
         type:
           "bar",
 
+        plugins: [
+          ChartDataLabels
+        ],
+
         data: {
 
           labels:
             projects.map(
-              function (project) {
-
-                return project.label;
-
-              }
+              project =>
+                project.label
             ),
 
           datasets: [
 
             {
+
               label:
                 "ดูแล้ว",
 
@@ -1548,9 +1701,11 @@ function renderReviewProgressChart(rows) {
 
               borderRadius:
                 5
+
             },
 
             {
+
               label:
                 "ยังไม่ดู",
 
@@ -1562,6 +1717,7 @@ function renderReviewProgressChart(rows) {
 
               borderRadius:
                 5
+
             }
 
           ]
@@ -1577,20 +1733,83 @@ function renderReviewProgressChart(rows) {
           maintainAspectRatio:
             false,
 
+
           plugins: {
 
             legend: {
+
               position:
                 "bottom"
+
+            },
+
+
+            datalabels: {
+
+              color:
+                "#ffffff",
+
+              font: {
+
+                weight:
+                  "bold",
+
+                size:
+                  12
+
+              },
+
+
+              formatter:
+                function (
+                  value,
+                  context
+                ) {
+
+                  if (!value) {
+
+                    return "";
+
+                  }
+
+
+                  const total =
+                    totals[
+                      context.dataIndex
+                    ] || 0;
+
+
+                  const percent =
+                    total
+                      ? (
+                          value /
+                          total *
+                          100
+                        )
+                      : 0;
+
+
+                  return (
+                    value +
+                    "\n" +
+                    percent.toFixed(1) +
+                    "%"
+                  );
+
+                }
+
             }
 
           },
 
+
           scales: {
 
             x: {
+
               stacked:
                 true
+
             },
 
             y: {
@@ -1602,8 +1821,10 @@ function renderReviewProgressChart(rows) {
                 true,
 
               ticks: {
+
                 precision:
                   0
+
               }
 
             }
