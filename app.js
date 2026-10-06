@@ -820,7 +820,7 @@ function renderDashboard() {
   // Executive charts always use all submissions so management
   // can compare both contest categories in one overview.
   renderExecutiveCharts(
-    allSubmissions
+    rows
   );
 
 
