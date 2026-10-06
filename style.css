@@ -430,6 +430,82 @@ button {
 }
 
 
+/* =========================================================
+   EXECUTIVE CHARTS
+========================================================= */
+
+.executive-charts {
+  margin-bottom: 22px;
+}
+
+
+.executive-heading {
+  margin-bottom: 12px;
+}
+
+
+.executive-heading h2 {
+  margin: 0;
+
+  color: #17263d;
+
+  font-size: 20px;
+}
+
+
+.executive-summary {
+  margin: 7px 0 0;
+
+  color: #6f7d90;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.chart-panel {
+  margin-bottom: 16px;
+}
+
+
+.chart-box {
+  position: relative;
+
+  width: 100%;
+
+  min-height: 320px;
+
+  padding: 18px;
+}
+
+
+.campus-chart-box {
+  min-height: 360px;
+}
+
+
+.chart-small-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+
+@media (max-width: 900px) {
+
+  .chart-small-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-box {
+    min-height: 300px;
+  }
+
+}
 
 /* =========================================================
    CONTENT
