@@ -164,6 +164,9 @@ const driveFallbackLink =
 const executiveSummaryText =
   byId("executiveSummaryText");
 
+const exportExecutiveTableBtn = 
+  byId("exportExecutiveTableBtn");
+
 const campusChartBox =
   byId("campusChartBox");
 
@@ -919,6 +922,262 @@ function renderKPIs(rows) {
 // ============================================================
 // EXECUTIVE CHARTS
 // ============================================================
+
+function exportExecutiveTable() {
+
+  // ใช้ข้อมูลตาม Project tab ที่กำลังเลือก
+  const rows = getProjectRows();
+
+  const campusMap = {};
+
+  rows.forEach(function (row) {
+
+    const campus =
+      row.campus || "ไม่ระบุ";
+
+    if (!campusMap[campus]) {
+      campusMap[campus] = {
+        campusPride: 0,
+        myLife: 0
+      };
+    }
+
+    if (
+      row.project_id ===
+      "campus-pride"
+    ) {
+      campusMap[campus]
+        .campusPride += 1;
+    }
+
+    if (
+      row.project_id ===
+      "my-life-mbu"
+    ) {
+      campusMap[campus]
+        .myLife += 1;
+    }
+
+  });
+
+
+  const campusRows =
+    Object.entries(campusMap)
+      .map(function (entry) {
+
+        return {
+          campus: entry[0],
+          campusPride:
+            entry[1].campusPride,
+          myLife:
+            entry[1].myLife,
+          total:
+            entry[1].campusPride +
+            entry[1].myLife
+        };
+
+      })
+      .sort(function (a, b) {
+        return b.total - a.total;
+      });
+
+
+  const project1Total =
+    rows.filter(function (row) {
+      return (
+        row.project_id ===
+        "campus-pride"
+      );
+    }).length;
+
+
+  const project2Total =
+    rows.filter(function (row) {
+      return (
+        row.project_id ===
+        "my-life-mbu"
+      );
+    }).length;
+
+
+  const grandTotal =
+    rows.length;
+
+
+  const csvRows = [
+
+    [
+      "วิทยาเขต / วิทยาลัย",
+      "Project 01",
+      "Project 01 (%)",
+      "Project 02",
+      "Project 02 (%)",
+      "รวม",
+      "สัดส่วนรวม (%)"
+    ]
+
+  ];
+
+
+  campusRows.forEach(function (item) {
+
+    const project1Percent =
+      project1Total
+        ? (
+            item.campusPride /
+            project1Total *
+            100
+          )
+        : 0;
+
+
+    const project2Percent =
+      project2Total
+        ? (
+            item.myLife /
+            project2Total *
+            100
+          )
+        : 0;
+
+
+    const totalPercent =
+      grandTotal
+        ? (
+            item.total /
+            grandTotal *
+            100
+          )
+        : 0;
+
+
+    csvRows.push([
+
+      item.campus,
+
+      item.campusPride,
+
+      project1Percent.toFixed(1),
+
+      item.myLife,
+
+      project2Percent.toFixed(1),
+
+      item.total,
+
+      totalPercent.toFixed(1)
+
+    ]);
+
+  });
+
+
+  // เพิ่มแถวรวม
+  csvRows.push([
+
+    "รวม",
+
+    project1Total,
+
+    project1Total ? "100.0" : "0.0",
+
+    project2Total,
+
+    project2Total ? "100.0" : "0.0",
+
+    grandTotal,
+
+    grandTotal ? "100.0" : "0.0"
+
+  ]);
+
+
+  const csvContent =
+    csvRows
+      .map(function (row) {
+
+        return row
+          .map(function (value) {
+
+            const text =
+              String(value ?? "");
+
+            return (
+              '"' +
+              text.replace(
+                /"/g,
+                '""'
+              ) +
+              '"'
+            );
+
+          })
+          .join(",");
+
+      })
+      .join("\n");
+
+
+  // BOM ทำให้ Excel อ่านภาษาไทยได้ถูกต้อง
+  const blob =
+    new Blob(
+      [
+        "\uFEFF" +
+        csvContent
+      ],
+      {
+        type:
+          "text/csv;charset=utf-8;"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const link =
+    document.createElement("a");
+
+
+  let projectName =
+    "all-projects";
+
+
+  if (
+    currentProject ===
+    "campus-pride"
+  ) {
+    projectName =
+      "campus-pride";
+  }
+
+
+  if (
+    currentProject ===
+    "my-life-mbu"
+  ) {
+    projectName =
+      "my-life-mbu";
+  }
+
+
+  link.href = url;
+
+  link.download =
+    "MBU-English-Contest-" +
+    projectName +
+    "-summary.csv";
+
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+}
 
 function renderExecutiveCharts(rows) {
 
@@ -2858,6 +3117,13 @@ function updateSelectionUI() {
 // ============================================================
 // EXPORT
 // ============================================================
+
+if (exportExecutiveTableBtn) {
+  exportExecutiveTableBtn.addEventListener(
+    "click",
+    exportExecutiveTable
+  );
+}
 
 exportSelectedButton.addEventListener(
   "click",
